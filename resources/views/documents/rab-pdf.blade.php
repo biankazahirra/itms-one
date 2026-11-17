@@ -26,18 +26,24 @@
             height: 37.43pt;
         }
 
-        .title {
+        .title-main {
             position: absolute;
             left: 0;
             width: 792.13pt;
-            top: 32.5pt;
+            top: 30.34pt;
             text-align: center;
             font-size: 13.98pt;
             font-weight: bold;
-            line-height: 1.45;
         }
 
-        .title .work-name {
+        .title-work {
+            position: absolute;
+            left: 0;
+            width: 792.13pt;
+            top: 50.71pt;
+            text-align: center;
+            font-size: 13.98pt;
+            font-weight: bold;
             color: #404040;
         }
 
@@ -50,13 +56,13 @@
             width: 715.36pt;
             border-collapse: collapse;
             font-size: 10.98pt;
-            line-height: 1.16;
+            line-height: 0.92;
         }
 
         table.items th,
         table.items td {
             border: 0.1pt solid #000;
-            padding: 2pt 3pt;
+            padding: 3.2pt 3pt;
             vertical-align: middle;
         }
 
@@ -69,8 +75,8 @@
             color: #000;
             font-weight: bold;
             text-align: center;
-            height: 18.4pt;
-            padding: 2pt 4pt;
+            height: auto;
+            padding: 2.64pt 4pt 6.26pt;
         }
 
         th.no { width: 4.09%; }
@@ -89,8 +95,8 @@
 
         tr.total td {
             font-weight: bold;
-            height: 16.8pt;
-            padding: 1pt 3pt;
+            height: auto;
+            padding: 2.65pt 3pt;
         }
 
         td.total-label {
@@ -104,32 +110,37 @@
         }
 
         .sign-block {
-            margin: 18pt 43.5pt 0 33.27pt;
+            position: relative;
+            margin: 14.45pt 43.5pt 0 33.27pt;
+            height: 120pt;
             page-break-inside: avoid;
         }
 
         .date-line {
-            text-align: right;
-            margin-bottom: 8pt;
+            position: absolute;
+            right: 0;
+            top: 15.95pt;
         }
 
-        table.signatures {
-            width: 100%;
-            border-collapse: collapse;
-            page-break-inside: avoid;
+        .sig-left {
+            position: absolute;
+            left: 400pt;
+            top: 35.85pt;
+            width: 110pt;
+            text-align: center;
+            line-height: 0.97;
         }
 
-        table.signatures td {
-            vertical-align: top;
-            font-size: 10.98pt;
-            line-height: 1.16;
+        .sig-right {
+            position: absolute;
+            left: 594.4pt;
+            top: 35.85pt;
+            width: 100pt;
+            text-align: center;
+            line-height: 0.97;
         }
 
-        table.signatures td.spacer { width: 56.5%; }
-        table.signatures td.left { width: 22.5%; }
-        table.signatures td.right { width: 21%; }
-
-        .signature-space { height: 60pt; }
+        .signature-space { height: 46.45pt; }
 
         .signatory-name {
             text-decoration: underline;
@@ -152,10 +163,8 @@
 
     <img class="logo" src="data:image/jpeg;base64,{{ base64_encode(file_get_contents(resource_path('assets/rab-logo.jpg'))) }}" alt="Logo">
 
-    <div class="title">
-        <div>Rencana Anggaran Biaya</div>
-        <div class="work-name">{{ $version->work_name }}</div>
-    </div>
+    <div class="title-main">Rencana Anggaran Biaya</div>
+    <div class="title-work">{{ $version->work_name }}</div>
 
     <div class="table-wrap">
         <table class="items">
@@ -193,23 +202,18 @@
     <div class="sign-block">
         <div class="date-line">Cilegon, {{ \Carbon\Carbon::parse($version->rab_date)->locale('id')->translatedFormat('j F Y') }}</div>
 
-        <table class="signatures">
-            <tr>
-                <td class="spacer"></td>
-                <td class="left">
-                    Disetujui,
-                    <div class="signature-space"></div>
-                    <span class="signatory-name">Tb. Benny Kurniawan</span><br>
-                    ITMS Manager
-                </td>
-                <td class="right">
-                    Dibuat oleh,
-                    <div class="signature-space"></div>
-                    <span class="signatory-name">Lazuardi Arsy</span><br>
-                    IT Senior Engineer
-                </td>
-            </tr>
-        </table>
+        <div class="sig-left">
+            Disetujui,
+            <div class="signature-space"></div>
+            <span class="signatory-name">Tb. Benny Kurniawan</span><br>
+            ITMS Manager
+        </div>
+        <div class="sig-right">
+            Dibuat oleh,
+            <div class="signature-space"></div>
+            <span class="signatory-name">Lazuardi Arsy</span><br>
+            IT Senior Engineer
+        </div>
     </div>
 </body>
 </html>
