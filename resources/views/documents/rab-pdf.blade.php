@@ -80,8 +80,8 @@
         }
 
         th.no { width: 4.09%; }
-        th.name { width: 24.67%; }
-        th.description { width: 28.34%; }
+        th.name { width: 33%; }
+        th.description { width: 20.01%; }
         th.qty { width: 3.77%; }
         th.unit { width: 8.28%; }
         th.price { width: 15.16%; }
