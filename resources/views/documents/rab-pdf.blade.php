@@ -80,12 +80,12 @@
         }
 
         th.no { width: 4.09%; }
-        th.name { width: 33%; }
-        th.description { width: 20.01%; }
+        th.name { width: 36.43%; }
+        th.description { width: 23.43%; }
         th.qty { width: 3.77%; }
         th.unit { width: 8.28%; }
-        th.price { width: 15.16%; }
-        th.amount { width: 15.69%; }
+        th.price { width: 12%; }
+        th.amount { width: 12%; }
 
         td.no { text-align: center; }
         td.qty { text-align: center; }
