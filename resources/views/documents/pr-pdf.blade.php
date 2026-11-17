@@ -162,8 +162,6 @@
         };
 
         $category = $version->category;
-        $itemCount = $version->items->count();
-        $minimumRows = 15;
     @endphp
 
     <div class="page">
@@ -246,18 +244,6 @@
                         <td></td>
                     </tr>
                 @endforeach
-
-                @for ($row = $itemCount; $row < $minimumRows; $row++)
-                    <tr>
-                        <td class="no"></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                    </tr>
-                @endfor
 
                 <tr class="total">
                     <td class="total-label" colspan="3">Total</td>
