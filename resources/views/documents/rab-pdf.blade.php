@@ -20,7 +20,7 @@
 
         .logo {
             position: absolute;
-            left: 33.27pt;
+            left: 38.39pt;
             top: 28.9pt;
             width: 134.54pt;
             height: 37.43pt;
@@ -48,7 +48,7 @@
         }
 
         .table-wrap {
-            margin: 107.7pt 43.5pt 0 33.27pt;
+            margin: 107.7pt 38.39pt 0 38.39pt;
         }
 
         table.items {
@@ -112,7 +112,7 @@
 
         .sign-block {
             position: relative;
-            margin: 14.45pt 43.5pt 0 33.27pt;
+            margin: 14.45pt 38.39pt 0 38.39pt;
             height: 120pt;
             page-break-inside: avoid;
         }
