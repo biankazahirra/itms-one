@@ -13,7 +13,7 @@
 
         body {
             font-family: Calibri, "dejavu sans", sans-serif;
-            font-size: 8.98pt;
+            font-size: 8pt;
             color: #000;
             margin: 0;
         }
@@ -32,7 +32,7 @@
             width: 792.13pt;
             top: 30.34pt;
             text-align: center;
-            font-size: 11.98pt;
+            font-size: 9pt;
             font-weight: bold;
         }
 
@@ -42,7 +42,7 @@
             width: 792.13pt;
             top: 50.71pt;
             text-align: center;
-            font-size: 11.98pt;
+            font-size: 9pt;
             font-weight: bold;
             color: #404040;
         }
@@ -55,7 +55,7 @@
             table-layout: fixed;
             width: 715.36pt;
             border-collapse: collapse;
-            font-size: 8.98pt;
+            font-size: 8pt;
             line-height: 0.92;
         }
 
