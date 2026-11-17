@@ -22,6 +22,26 @@
                    class="flex items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150 ease-out {{ request()->routeIs('dashboard') ? 'bg-primary/10 text-primary' : 'text-muted hover:bg-app hover:text-ink' }}">
                     Dashboard
                 </a>
+
+                <p class="px-3 pt-4 pb-1 text-xs font-semibold uppercase tracking-wide text-muted">Master Data</p>
+
+                <a href="{{ route('master.vendors.index') }}"
+                   @if (request()->routeIs('master.vendors.*')) aria-current="page" @endif
+                   class="flex items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150 ease-out {{ request()->routeIs('master.vendors.*') ? 'bg-primary/10 text-primary' : 'text-muted hover:bg-app hover:text-ink' }}">
+                    Vendor
+                </a>
+
+                <a href="{{ route('master.units.index') }}"
+                   @if (request()->routeIs('master.units.*')) aria-current="page" @endif
+                   class="flex items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150 ease-out {{ request()->routeIs('master.units.*') ? 'bg-primary/10 text-primary' : 'text-muted hover:bg-app hover:text-ink' }}">
+                    Satuan
+                </a>
+
+                <a href="{{ route('master.departments.index') }}"
+                   @if (request()->routeIs('master.departments.*')) aria-current="page" @endif
+                   class="flex items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150 ease-out {{ request()->routeIs('master.departments.*') ? 'bg-primary/10 text-primary' : 'text-muted hover:bg-app hover:text-ink' }}">
+                    Departemen
+                </a>
             </nav>
         </aside>
 

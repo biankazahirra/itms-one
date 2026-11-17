@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Department;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -31,5 +32,9 @@ class DatabaseSeeder extends Seeder
                 'is_active' => true,
             ],
         );
+
+        foreach (['ITMS', 'Accounting Department', 'Human Capital Department'] as $name) {
+            Department::firstOrCreate(['name' => $name], ['is_active' => true]);
+        }
     }
 }

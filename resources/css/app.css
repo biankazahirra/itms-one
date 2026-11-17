@@ -36,3 +36,37 @@
         }
     }
 }
+
+@layer components {
+    .input {
+        @apply h-10 w-full rounded-lg border border-line bg-surface px-3 text-sm text-ink transition-colors duration-150 placeholder:text-muted/70 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20;
+    }
+
+    .input-error {
+        @apply border-danger focus:border-danger focus:ring-danger/20;
+    }
+
+    .input-select {
+        @apply pr-8;
+    }
+
+    .btn {
+        @apply inline-flex h-9 shrink-0 items-center justify-center gap-2 rounded-lg px-3.5 text-sm font-medium transition-[background-color,color,transform] duration-150 ease-out active:scale-[0.98];
+    }
+
+    .btn-primary {
+        @apply bg-primary text-white hover:bg-primary-hover;
+    }
+
+    .btn-secondary {
+        @apply border border-line bg-surface text-ink hover:bg-app;
+    }
+
+    .table-cell {
+        @apply px-4 py-3 align-middle;
+    }
+
+    .table-head {
+        @apply px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wide text-muted;
+    }
+}
