@@ -139,7 +139,7 @@
 
         tr.total td { height: 10.8pt; }
         td.total-label { text-align: center; font-weight: bold; }
-        td.total-value { text-align: right; font-weight: bold; padding-right: 0.5pt; white-space: nowrap; background: #fef3c7; }
+        td.total-value { text-align: right; font-weight: bold; padding-right: 0.5pt; white-space: nowrap; background: #ffd60a; }
 
         table.footer {
             width: 100%;
