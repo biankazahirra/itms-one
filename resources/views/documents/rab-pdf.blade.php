@@ -161,7 +161,7 @@
         };
     @endphp
 
-    <img class="logo" src="data:image/jpeg;base64,{{ base64_encode(file_get_contents(resource_path('assets/rab-logo.jpg'))) }}" alt="Logo">
+    <img class="logo" src="data:image/png;base64,{{ base64_encode(file_get_contents(resource_path('assets/rab-logo.png'))) }}" alt="Logo">
 
     <div class="title-main">Rencana Anggaran Biaya</div>
     <div class="title-work">{{ $version->work_name }}</div>
