@@ -23,6 +23,12 @@
                     Dashboard
                 </a>
 
+                <a href="{{ route('purchase-requests.index') }}"
+                   @if (request()->routeIs('purchase-requests.*')) aria-current="page" @endif
+                   class="flex items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150 ease-out {{ request()->routeIs('purchase-requests.*') ? 'bg-primary/10 text-primary' : 'text-muted hover:bg-app hover:text-ink' }}">
+                    Purchase Requisition
+                </a>
+
                 <p class="px-3 pt-4 pb-1 text-xs font-semibold uppercase tracking-wide text-muted">Master Data</p>
 
                 <a href="{{ route('master.vendors.index') }}"

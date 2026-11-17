@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\PurchaseRequest;
+
 return [
 
     /*
@@ -14,7 +16,7 @@ return [
     */
 
     'types' => [
-        // 'purchase_request' => App\Models\PurchaseRequest::class,
+        'purchase_request' => PurchaseRequest::class,
     ],
 
 ];

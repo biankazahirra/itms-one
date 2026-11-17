@@ -5,6 +5,7 @@ namespace App\Services;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use InvalidArgumentException;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class PrivateFileService
@@ -29,6 +30,20 @@ class PrivateFileService
         $safePath = $this->safePath($path);
 
         return $safePath !== null && Storage::disk(self::DISK)->exists($safePath);
+    }
+
+    /**
+     * Write generated contents to a private path.
+     */
+    public function putContents(string $path, string $contents): void
+    {
+        $safePath = $this->safePath($path);
+
+        if ($safePath === null) {
+            throw new InvalidArgumentException("Unsafe private file path [{$path}].");
+        }
+
+        Storage::disk(self::DISK)->put($safePath, $contents);
     }
 
     public function delete(string $path): bool
