@@ -4,218 +4,286 @@
     <meta charset="utf-8">
     <title>PR {{ $purchaseRequest->pr_number }}</title>
     <style>
-        @page { margin: 22mm 18mm; }
+        @page { margin: 0; }
 
         * { box-sizing: border-box; }
 
         body {
-            font-family: 'DejaVu Sans', sans-serif;
-            font-size: 10pt;
-            color: #0f172a;
+            font-family: times-roman;
+            font-size: 8pt;
+            color: #000;
             margin: 0;
         }
 
-        h1 {
-            font-size: 14pt;
-            letter-spacing: 0.04em;
-            margin: 0 0 2mm;
-            text-align: center;
+        .page {
+            padding: 30.3pt 102pt 0 75.74pt;
         }
 
-        .company {
+        .title {
             font-size: 9pt;
+            font-weight: bold;
             text-align: center;
-            color: #334155;
-        }
-
-        .document-number {
-            margin-top: 1mm;
-            text-align: center;
-            font-size: 9pt;
-        }
-
-        .divider {
-            border-top: 1pt solid #0f172a;
-            margin: 5mm 0 4mm;
+            margin: 0;
         }
 
         table.meta {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 5mm;
+            margin-top: 24.2pt;
         }
 
-        table.meta th,
         table.meta td {
-            padding: 1.2mm 0;
+            padding: 0;
+            height: 11pt;
             vertical-align: top;
-            text-align: left;
-            font-weight: normal;
+            font-size: 8pt;
         }
 
-        table.meta th {
-            width: 26mm;
-            color: #475569;
+        table.meta td.label { width: 61.86pt; }
+        table.meta td.colon { width: 33.9pt; }
+
+        .salutation {
+            margin-top: 18.2pt;
+            line-height: 12pt;
+        }
+
+        table.categories {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 2.2pt;
+        }
+
+        table.categories td {
+            padding: 0;
+            vertical-align: top;
+            font-size: 8pt;
+            line-height: 14.25pt;
+        }
+
+        table.categories td.left { width: 465pt; }
+
+        table.categories td.right { padding-top: 4.5pt; }
+
+        .checkbox {
+            display: inline-block;
+            width: 8.25pt;
+            height: 8.25pt;
+            border: 0.5pt solid #000;
+            font-size: 6.5pt;
+            font-weight: bold;
+            line-height: 8pt;
+            text-align: center;
+            vertical-align: middle;
+            margin-left: -3.75pt;
+            margin-right: 4pt;
+        }
+
+        .budget-note {
+            margin-top: 13.1pt;
         }
 
         table.items {
-            width: 100%;
+            table-layout: fixed;
+            width: 640.5pt;
             border-collapse: collapse;
+            margin-top: 9.7pt;
+            margin-left: -2.25pt;
+            font-size: 8pt;
         }
 
         table.items th,
         table.items td {
-            border: 0.6pt solid #94a3b8;
-            padding: 1.8mm 2mm;
-            font-size: 9pt;
+            border: 0.5pt solid #000;
+            padding: 1pt 2pt;
+            line-height: 9pt;
+            vertical-align: top;
         }
 
         table.items th {
-            background: #e2e8f0;
-            text-align: center;
-        }
-
-        table.items td.no { width: 8mm; text-align: center; }
-        table.items td.qty { width: 16mm; text-align: right; }
-        table.items td.money { width: 32mm; text-align: right; }
-        table.items td.account { width: 22mm; text-align: center; }
-
-        table.total {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: -0.6pt;
-        }
-
-        table.total th,
-        table.total td {
-            border: 0.6pt solid #94a3b8;
-            padding: 2mm;
-            font-size: 9pt;
-        }
-
-        table.total th {
-            text-align: right;
-            background: #f1f5f9;
-        }
-
-        table.total td {
-            width: 32mm;
-            text-align: right;
             font-weight: bold;
-        }
-
-        .note {
-            margin-top: 3mm;
-            font-size: 8pt;
-            color: #475569;
-        }
-
-        table.signatures {
-            width: 100%;
-            margin-top: 14mm;
-            border-collapse: collapse;
-        }
-
-        table.signatures td {
-            width: 50%;
             text-align: center;
+            vertical-align: middle;
+            height: 10.8pt;
+            padding: 1pt;
+        }
+
+        table.items td { height: 12.05pt; }
+
+        col.no { width: 15.7pt; }
+        col.name { width: 296.3pt; }
+        col.qty { width: 19.5pt; }
+        col.money { width: 92.2pt; }
+        col.gl { width: 84.8pt; }
+        col.cost { width: 79.5pt; }
+        col.io { width: 52.5pt; }
+
+        td.no { text-align: center; }
+        td.name { padding-left: 0.5pt; }
+        td.qty { text-align: center; }
+        td.money { text-align: right; padding-right: 0.5pt; white-space: nowrap; }
+
+        tr.total td { height: 10.8pt; }
+        td.total-label { text-align: center; font-weight: bold; }
+        td.total-value { text-align: right; font-weight: bold; padding-right: 0.5pt; white-space: nowrap; }
+
+        table.footer {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 8.2pt;
+        }
+
+        table.footer td {
+            padding: 0;
             vertical-align: top;
-            font-size: 9pt;
+            font-size: 8pt;
+            line-height: 11.25pt;
+        }
+
+        td.notes { width: 530pt; }
+
+        td.signature {
+            width: 128pt;
+            text-align: center;
+            padding-left: 7pt;
         }
 
         .signature-space {
-            height: 20mm;
-        }
-
-        .signature-name {
-            border-top: 0.6pt solid #0f172a;
-            padding-top: 1.5mm;
-            margin: 0 12mm;
+            height: 37.7pt;
         }
     </style>
 </head>
 <body>
-    <div class="company">IT &amp; Management System Department</div>
-    <h1>FORM PURCHASE REQUISITION</h1>
-    <div class="document-number">No. {{ $purchaseRequest->pr_number }}</div>
+    @php
+        $money = function ($value) {
+            $value = (string) $value;
+            $decimals = bccomp($value, bcadd($value, '0', 0), 2) === 0 ? 0 : 2;
 
-    <div class="divider"></div>
+            return number_format((float) $value, $decimals, ',', '.');
+        };
 
-    <table class="meta">
-        <tr>
-            <th>Dari</th>
-            <td>Divisi ITMS / IT &amp; Management System Department</td>
-        </tr>
-        <tr>
-            <th>Kepada</th>
-            <td>{{ $version->department?->name ?? '—' }}</td>
-        </tr>
-        <tr>
-            <th>Perihal</th>
-            <td>{{ $version->subject }}</td>
-        </tr>
-        <tr>
-            <th>Tanggal</th>
-            <td>{{ \App\Support\Format::tanggal($version->pr_date) }}</td>
-        </tr>
-        <tr>
-            <th>Kategori</th>
-            <td>{{ $version->category ?: '—' }}</td>
-        </tr>
-    </table>
+        $category = $version->category;
+        $itemCount = $version->items->count();
+        $minimumRows = 15;
+    @endphp
 
-    <table class="items">
-        <thead>
+    <div class="page">
+        <p class="title">Form Pengajuan Purchase Requisition</p>
+
+        <table class="meta">
             <tr>
-                <th>No</th>
-                <th>Nama Anggaran</th>
-                <th>Qty</th>
-                <th>Estimasi Harga</th>
-                <th>GL Account*</th>
-                <th>Cost Center*</th>
-                <th>No IO**</th>
+                <td class="label">Dari</td>
+                <td class="colon">:</td>
+                <td>Divisi ITMS</td>
             </tr>
-        </thead>
-        <tbody>
-            @foreach ($version->items as $index => $item)
+            <tr>
+                <td class="label">Kepada Yth</td>
+                <td class="colon">:</td>
+                <td>{{ $version->department?->name ?? '—' }}</td>
+            </tr>
+            <tr>
+                <td class="label">Perihal</td>
+                <td class="colon">:</td>
+                <td>{{ $version->subject }}</td>
+            </tr>
+            <tr>
+                <td class="label">Tanggal</td>
+                <td class="colon">:</td>
+                <td>{{ \Carbon\Carbon::parse($version->pr_date)->format('d-M-y') }}</td>
+            </tr>
+        </table>
+
+        <div class="salutation">
+            <div>Dengan hormat,</div>
+            <div>Dengan ini kami meminta dibuatkan Purchase Requisition untuk:</div>
+        </div>
+
+        <table class="categories">
+            <tr>
+                <td class="left">
+                    <div><span class="checkbox">{{ $category === 'Investment' ? 'X' : '' }}</span>Purchase Requisition Investment</div>
+                    <div><span class="checkbox">{{ $category === 'Office Supplies' ? 'X' : '' }}</span>Purchase Requisition Office Supplies</div>
+                    <div><span class="checkbox">{{ $category === 'Maintenance' ? 'X' : '' }}</span>Purchase Requisition Maintenance</div>
+                </td>
+                <td class="right">
+                    <div><span class="checkbox">{{ $category === 'Services' ? 'X' : '' }}</span>Purchase Requisition Services</div>
+                    <div><span class="checkbox">{{ $category === 'Fixed Asset' ? 'X' : '' }}</span>Purchase Requisition Fixed Asset</div>
+                </td>
+            </tr>
+        </table>
+
+        <div class="budget-note">Biaya pekerjaan dibebankan pada mata anggaran:</div>
+
+        <table class="items">
+            <colgroup>
+                <col class="no">
+                <col class="name">
+                <col class="qty">
+                <col class="money">
+                <col class="gl">
+                <col class="cost">
+                <col class="io">
+            </colgroup>
+            <thead>
                 <tr>
-                    <td class="no">{{ $index + 1 }}</td>
-                    <td>{{ $item->budget_name }}</td>
-                    <td class="qty">{{ \App\Support\Money::quantity($item->quantity) }}</td>
-                    <td class="money">{{ \App\Support\Format::rupiah($item->estimated_total, 2) }}</td>
-                    <td class="account"></td>
-                    <td class="account"></td>
-                    <td class="account"></td>
+                    <th style="width: 2.45%"></th>
+                    <th style="width: 46.26%">Nama Anggaran</th>
+                    <th style="width: 3.04%">Qty</th>
+                    <th style="width: 14.39%">Estimasi Harga</th>
+                    <th style="width: 13.24%">GL Account*</th>
+                    <th style="width: 12.41%">Cost Center*</th>
+                    <th style="width: 8.2%">No IO**</th>
                 </tr>
-            @endforeach
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                @foreach ($version->items as $index => $item)
+                    <tr>
+                        <td class="no">{{ $index + 1 }}</td>
+                        <td class="name">{{ $item->budget_name }}</td>
+                        <td class="qty">{{ \App\Support\Money::quantity($item->quantity) }}</td>
+                        <td class="money">{{ $money($item->estimated_total) }}</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                @endforeach
 
-    <table class="total">
-        <tr>
-            <th>Grand Total</th>
-            <td>{{ \App\Support\Format::rupiah($version->grand_total, 2) }}</td>
-        </tr>
-    </table>
+                @for ($row = $itemCount; $row < $minimumRows; $row++)
+                    <tr>
+                        <td class="no"></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                @endfor
 
-    <p class="note">
-        * GL Account dan Cost Center diisi sesuai ketentuan akuntansi.<br>
-        ** No IO diisi bila diperlukan.
-    </p>
+                <tr class="total">
+                    <td class="total-label" colspan="3">Total</td>
+                    <td class="total-value">{{ $money($version->grand_total) }}</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+            </tbody>
+        </table>
 
-    <table class="signatures">
-        <tr>
-            <td>
-                Dibuat oleh,
-                <div class="signature-space"></div>
-                <div class="signature-name">Divisi ITMS</div>
-            </td>
-            <td>
-                Disetujui oleh,
-                <div class="signature-space"></div>
-                <div class="signature-name">{{ $version->department?->name ?? 'Departemen Tujuan' }}</div>
-            </td>
-        </tr>
-    </table>
+        <table class="footer">
+            <tr>
+                <td class="notes">
+                    <div>Notes:</div>
+                    <div>* Diverifikasi Accounting</div>
+                    <div>** Diisi Accounting</div>
+                </td>
+                <td class="signature">
+                    <div>ITMS Department</div>
+                    <div class="signature-space"></div>
+                    <div>Tb. Benny Kurniawan</div>
+                    <div>Manager</div>
+                </td>
+            </tr>
+        </table>
+    </div>
 </body>
 </html>

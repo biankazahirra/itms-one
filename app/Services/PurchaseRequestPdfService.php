@@ -43,7 +43,7 @@ class PurchaseRequestPdfService
 
         $dompdf = new Dompdf(['isRemoteEnabled' => false]);
         $dompdf->loadHtml($html, 'UTF-8');
-        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->setPaper('A4', 'landscape');
         $dompdf->render();
 
         $output = $dompdf->output();

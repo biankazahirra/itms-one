@@ -337,7 +337,7 @@ it('keeps unit prices out of the PR PDF template', function () {
 
     expect($html)->toContain('GL Account')
         ->toContain('Estimasi Harga')
-        ->toContain('23.331,00')
+        ->toContain('23.331')
         ->not->toContain('Harga Satuan')
         ->not->toContain('7.777');
 });
