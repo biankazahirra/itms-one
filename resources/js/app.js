@@ -48,3 +48,180 @@
 
     reindex();
 })();
+
+// RAB item rows: add, remove, reindex, line totals, create-mode toggle, quick unit add.
+(() => {
+    const table = document.getElementById('rab-items-table');
+    const body = document.getElementById('rab-items-body');
+    const template = document.getElementById('rab-item-row-template');
+    const addButton = document.getElementById('add-rab-item');
+
+    if (table && body && template && addButton) {
+        const grandTotalEl = document.getElementById('rab-grand-total');
+
+        const numberFromValue = (value) => {
+            const parsed = Number(value);
+
+            return Number.isFinite(parsed) ? parsed : 0;
+        };
+
+        const formatRupiah = (value) => `Rp ${value.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+        const recalc = () => {
+            let total = 0;
+
+            body.querySelectorAll('[data-item-row]').forEach((row) => {
+                const quantity = numberFromValue(row.querySelector('[data-field="quantity"]')?.value);
+                const price = numberFromValue(row.querySelector('[data-field="unit_price"]')?.value);
+                const lineTotal = quantity * price;
+                const cell = row.querySelector('[data-line-total]');
+
+                total += lineTotal;
+
+                if (cell) {
+                    cell.textContent = lineTotal === 0 && (quantity === 0 || price === 0) ? '—' : formatRupiah(lineTotal);
+                }
+            });
+
+            if (grandTotalEl) {
+                grandTotalEl.textContent = formatRupiah(total);
+            }
+        };
+
+        const reindex = () => {
+            const rows = [...body.querySelectorAll('[data-item-row]')];
+
+            rows.forEach((row, index) => {
+                row.querySelector('[data-row-number]').textContent = String(index + 1);
+                row.querySelectorAll('[data-field]').forEach((input) => {
+                    input.name = `items[${index}][${input.dataset.field}]`;
+                    input.setAttribute('aria-label', `${input.dataset.field} baris ${index + 1}`);
+                });
+            });
+
+            const removeButtons = body.querySelectorAll('[data-remove-item]');
+
+            removeButtons.forEach((button) => {
+                button.disabled = rows.length === 1;
+                button.classList.toggle('opacity-40', rows.length === 1);
+            });
+
+            recalc();
+        };
+
+        addButton.addEventListener('click', () => {
+            const fragment = template.content.cloneNode(true);
+            body.appendChild(fragment);
+            reindex();
+            body.querySelector('[data-item-row]:last-child input')?.focus();
+        });
+
+        body.addEventListener('click', (event) => {
+            const button = event.target.closest('[data-remove-item]');
+
+            if (!button || body.querySelectorAll('[data-item-row]').length === 1) {
+                return;
+            }
+
+            button.closest('[data-item-row]').remove();
+            reindex();
+        });
+
+        body.addEventListener('input', (event) => {
+            if (event.target.matches('[data-field="quantity"], [data-field="unit_price"]')) {
+                recalc();
+            }
+        });
+
+        reindex();
+    }
+
+    const modeRadios = document.querySelectorAll('input[name="creation_mode"]');
+
+    if (modeRadios.length > 0) {
+        const standaloneFields = document.getElementById('standalone-fields');
+        const importFields = document.getElementById('import-fields');
+        const itemsSection = document.getElementById('items-section');
+        const prSelect = document.getElementById('purchase_request_id');
+
+        const setMode = (mode) => {
+            const isImport = mode === 'import';
+
+            standaloneFields?.classList.toggle('hidden', isImport);
+            importFields?.classList.toggle('hidden', !isImport);
+            itemsSection?.classList.toggle('hidden', isImport);
+
+            if (prSelect) {
+                prSelect.disabled = !isImport;
+            }
+
+            itemsSection?.querySelectorAll('input, select').forEach((el) => {
+                el.disabled = isImport;
+            });
+
+            standaloneFields?.querySelectorAll('input, select').forEach((el) => {
+                if (el.id === 'location') {
+                    return;
+                }
+
+                el.disabled = isImport;
+            });
+
+            document.querySelectorAll('[data-mode-option]').forEach((label) => {
+                const active = label.dataset.modeOption === mode;
+
+                label.classList.toggle('border-primary', active);
+                label.classList.toggle('bg-primary/5', active);
+                label.classList.toggle('text-primary', active);
+            });
+        };
+
+        modeRadios.forEach((radio) => radio.addEventListener('change', () => setMode(radio.value)));
+        setMode(document.querySelector('input[name="creation_mode"]:checked')?.value ?? 'standalone');
+    }
+
+    const quickAddButton = document.getElementById('quick-add-unit-button');
+
+    if (quickAddButton) {
+        const input = document.getElementById('quick_add_unit_name');
+        const csrf = document.getElementById('quick_add_csrf')?.value ?? '';
+
+        quickAddButton.addEventListener('click', async () => {
+            const unitName = input.value.trim();
+
+            if (unitName === '') {
+                return;
+            }
+
+            try {
+                const response = await fetch('/master/units/quick-add', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': csrf,
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams({ unit_name: unitName }).toString(),
+                });
+
+                const payload = await response.json();
+
+                document.querySelectorAll('#rab-items-table select[data-field="unit_id"], #rab-item-row-template select[data-field="unit_id"]').forEach((select) => {
+                    if ([...select.options].some((option) => String(option.value) === String(payload.id))) {
+                        return;
+                    }
+
+                    const option = document.createElement('option');
+                    option.value = String(payload.id);
+                    option.textContent = payload.unit_name;
+                    select.appendChild(option);
+                });
+
+                input.value = '';
+            } catch {
+                // leave input intact so the user can retry
+            }
+        });
+    }
+})();

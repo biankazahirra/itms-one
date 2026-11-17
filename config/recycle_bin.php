@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Budget;
 use App\Models\PurchaseRequest;
 
 return [
@@ -17,6 +18,7 @@ return [
 
     'types' => [
         'purchase_request' => PurchaseRequest::class,
+        'budget' => Budget::class,
     ],
 
 ];

@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Unit;
 use App\Rules\UniqueNormalized;
 use App\Services\ActivityLogService;
+use App\Support\TextNormalizer;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -99,6 +101,43 @@ class UnitController extends Controller
         return redirect()
             ->route('master.units.index')
             ->with('status', 'Satuan berhasil diperbarui.');
+    }
+
+    /**
+     * Quick-add a unit from the RAB item form.
+     *
+     * Returns the existing normalized match when present; otherwise creates
+     * a new active unit and logs the activity.
+     */
+    public function quickAdd(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'unit_name' => ['required', 'string', 'max:80'],
+        ], [], ['unit_name' => 'Nama Satuan']);
+
+        $normalized = TextNormalizer::normalize($data['unit_name']);
+
+        foreach (Unit::query()->cursor() as $unit) {
+            if (TextNormalizer::normalize($unit->unit_name) === $normalized) {
+                return response()->json(['id' => $unit->id, 'unit_name' => $unit->unit_name]);
+            }
+        }
+
+        $unit = Unit::create([
+            'unit_name' => $data['unit_name'],
+            'is_active' => true,
+        ]);
+
+        $this->activity->record(
+            'unit',
+            $unit->id,
+            'created',
+            "Menambahkan satuan {$unit->unit_name}.",
+            null,
+            ['unit_name' => $unit->unit_name, 'is_active' => $unit->is_active],
+        );
+
+        return response()->json(['id' => $unit->id, 'unit_name' => $unit->unit_name], 201);
     }
 
     /**

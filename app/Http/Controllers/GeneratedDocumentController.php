@@ -13,7 +13,10 @@ class GeneratedDocumentController extends Controller
      */
     public function __invoke(GeneratedDocument $document, PrivateFileService $files): StreamedResponse
     {
-        abort_unless($document->entity_type === GeneratedDocument::ENTITY_PURCHASE_REQUEST, 404);
+        abort_unless(in_array($document->entity_type, [
+            GeneratedDocument::ENTITY_PURCHASE_REQUEST,
+            GeneratedDocument::ENTITY_BUDGET,
+        ], true), 404);
 
         return $files->download($document->storage_path, $document->original_filename);
     }

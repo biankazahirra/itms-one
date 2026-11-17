@@ -24,6 +24,8 @@ class GeneratedDocument extends Model
 {
     public const ENTITY_PURCHASE_REQUEST = 'purchase_request';
 
+    public const ENTITY_BUDGET = 'budget';
+
     public const FORMAT_PDF = 'PDF';
 
     /**

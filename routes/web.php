@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\BudgetController;
 use App\Http\Controllers\GeneratedDocumentController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\Master\DepartmentController;
@@ -21,6 +22,7 @@ Route::middleware('auth')->group(function () {
     Route::prefix('master')->name('master.')->group(function () {
         Route::resource('vendors', VendorController::class)->except(['show', 'destroy']);
         Route::resource('units', UnitController::class)->except(['show', 'destroy']);
+        Route::post('units/quick-add', [UnitController::class, 'quickAdd'])->name('units.quick-add');
         Route::resource('departments', DepartmentController::class)->except(['show', 'destroy']);
     });
 
@@ -35,6 +37,18 @@ Route::middleware('auth')->group(function () {
     Route::post('purchase-requests/{purchaseRequest}/revision', [PurchaseRequestController::class, 'revision'])->name('purchase-requests.revision');
     Route::post('purchase-requests/{purchaseRequest}/archive', [PurchaseRequestController::class, 'archive'])->name('purchase-requests.archive');
     Route::post('purchase-requests/{purchaseRequest}/documents', [PurchaseRequestController::class, 'generateDocument'])->name('purchase-requests.documents.store');
+    Route::get('rab', [BudgetController::class, 'index'])->name('rab.index');
+    Route::get('rab/create', [BudgetController::class, 'create'])->name('rab.create');
+    Route::post('rab', [BudgetController::class, 'store'])->name('rab.store');
+    Route::get('rab/{budget}', [BudgetController::class, 'show'])->name('rab.show');
+    Route::get('rab/{budget}/edit', [BudgetController::class, 'edit'])->name('rab.edit');
+    Route::put('rab/{budget}', [BudgetController::class, 'update'])->name('rab.update');
+    Route::delete('rab/{budget}', [BudgetController::class, 'destroy'])->name('rab.destroy');
+    Route::post('rab/{budget}/finalize', [BudgetController::class, 'finalize'])->name('rab.finalize');
+    Route::post('rab/{budget}/revision', [BudgetController::class, 'revision'])->name('rab.revision');
+    Route::post('rab/{budget}/archive', [BudgetController::class, 'archive'])->name('rab.archive');
+    Route::post('rab/{budget}/documents', [BudgetController::class, 'generateDocument'])->name('rab.documents.store');
+
     Route::get('documents/{document}', GeneratedDocumentController::class)->name('documents.download');
 
     Route::get('/files/{path}', PrivateFileController::class)
