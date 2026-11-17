@@ -105,8 +105,9 @@
 
         td.total-value {
             background-color: #0BC3FD;
-            text-align: center;
+            text-align: right;
             white-space: nowrap;
+            padding-right: 3pt;
         }
 
         .sign-block {
