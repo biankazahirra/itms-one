@@ -30,7 +30,7 @@
             <option value="standalone" @selected($link === 'standalone')>RAB mandiri</option>
         </select>
 
-        <div class="flex gap-2">
+        <div class="flex gap-2 lg:col-span-2">
             <input type="date" name="date_from" value="{{ $dateFrom }}" aria-label="Tanggal dari" class="input">
             <input type="date" name="date_to" value="{{ $dateTo }}" aria-label="Tanggal sampai" class="input">
         </div>

@@ -13,7 +13,7 @@
     <x-session-alerts />
 
     <form method="GET" action="{{ route('purchase-requests.index') }}"
-          class="mb-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-6">
+          class="mb-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-7">
         <input type="search" name="q" value="{{ $search }}" placeholder="Cari nomor atau perihal"
                aria-label="Cari PR" class="input lg:col-span-2">
 
@@ -40,12 +40,12 @@
             @endforeach
         </select>
 
-        <div class="flex gap-2">
+        <div class="flex gap-2 lg:col-span-2">
             <input type="date" name="date_from" value="{{ $dateFrom }}" aria-label="Tanggal dari" class="input">
             <input type="date" name="date_to" value="{{ $dateTo }}" aria-label="Tanggal sampai" class="input">
         </div>
 
-        <div class="flex items-center gap-2 sm:col-span-2 lg:col-span-6">
+        <div class="flex items-center gap-2 sm:col-span-2 lg:col-span-7">
             <button type="submit" class="btn btn-secondary">Terapkan</button>
             @if ($search !== '' || $status !== '' || $category !== '' || $departmentId !== '' || $dateFrom !== '' || $dateTo !== '')
                 <a href="{{ route('purchase-requests.index') }}" class="text-sm text-muted underline-offset-2 hover:underline">Reset</a>
