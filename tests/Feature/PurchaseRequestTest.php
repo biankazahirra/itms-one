@@ -342,6 +342,29 @@ it('keeps unit prices out of the PR PDF template', function () {
         ->not->toContain('7.777');
 });
 
+it('renders a blank estimated price cell for zero-priced items in the PR PDF template', function () {
+    $this->actingAs($this->user)->post(route('purchase-requests.store'), prPayload([
+        'items' => [
+            [
+                'budget_name' => 'Barang tanpa harga',
+                'quantity' => '5',
+                'unit_price' => '0',
+            ],
+        ],
+    ]));
+
+    $purchaseRequest = PurchaseRequest::firstOrFail();
+    $version = $purchaseRequest->currentVersion->load(['items', 'department']);
+
+    $html = view('documents.pr-pdf', [
+        'purchaseRequest' => $purchaseRequest,
+        'version' => $version,
+    ])->render();
+
+    expect($html)->toContain('Barang tanpa harga')
+        ->toMatch('#<td class="money"></td>#');
+});
+
 it('filters the PR list by search term and status', function () {
     $this->actingAs($this->user)->post(route('purchase-requests.store'), prPayload());
     $first = PurchaseRequest::firstOrFail();

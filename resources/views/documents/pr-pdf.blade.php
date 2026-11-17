@@ -169,9 +169,13 @@
 </head>
 <body>
     @php
-        $money = function ($value) {
+        $money = function ($value, bool $blankWhenZero = false) {
             $value = (string) $value;
             $decimals = bccomp($value, bcadd($value, '0', 0), 2) === 0 ? 0 : 2;
+
+            if ($blankWhenZero && bccomp($value, '0', 2) === 0) {
+                return '';
+            }
 
             return number_format((float) $value, $decimals, ',', '.');
         };
@@ -272,7 +276,7 @@
                         <td class="no">{{ $index + 1 }}</td>
                         <td class="name">{{ $item->budget_name }}</td>
                         <td class="qty">{{ \App\Support\Money::quantity($item->quantity) }}</td>
-                        <td class="money">{{ $money($item->estimated_total) }}</td>
+                        <td class="money">{{ $money($item->estimated_total, true) }}</td>
                         <td></td>
                         <td></td>
                         <td></td>

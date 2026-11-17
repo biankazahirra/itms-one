@@ -164,7 +164,7 @@
                             <td class="table-cell">{{ $item->budget_name }}</td>
                             <td class="table-cell text-right tabular-nums">{{ \App\Support\Money::quantity($item->quantity) }}</td>
                             <td class="table-cell text-right tabular-nums">{{ \App\Support\Format::rupiah($item->unit_price, 2) }}</td>
-                            <td class="table-cell text-right tabular-nums">{{ \App\Support\Format::rupiah($item->estimated_total, 2) }}</td>
+                            <td class="table-cell text-right tabular-nums">{{ bccomp((string) $item->estimated_total, '0', 2) === 0 ? '' : \App\Support\Format::rupiah($item->estimated_total, 2) }}</td>
                         </tr>
                     @empty
                         <tr>
