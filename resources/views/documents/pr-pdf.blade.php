@@ -64,6 +64,24 @@
 
         table.categories td.right { padding-top: 4.5pt; }
 
+        table.cat {
+            border-collapse: collapse;
+            margin-left: -3.75pt;
+        }
+
+        table.cat td {
+            padding: 0;
+            vertical-align: middle;
+            font-size: 8pt;
+            line-height: 14.25pt;
+            white-space: nowrap;
+        }
+
+        table.cat td.box {
+            width: 12pt;
+            text-align: left;
+        }
+
         .checkbox {
             display: inline-block;
             width: 8.25pt;
@@ -71,11 +89,8 @@
             border: 0.5pt solid #000;
             font-size: 6.5pt;
             font-weight: bold;
-            line-height: 8pt;
+            line-height: 7pt;
             text-align: center;
-            vertical-align: middle;
-            margin-left: -3.75pt;
-            margin-right: 4pt;
         }
 
         .budget-note {
@@ -198,13 +213,32 @@
         <table class="categories">
             <tr>
                 <td class="left">
-                    <div><span class="checkbox">{{ $category === 'Investment' ? 'X' : '' }}</span>Purchase Requisition Investment</div>
-                    <div><span class="checkbox">{{ $category === 'Office Supplies' ? 'X' : '' }}</span>Purchase Requisition Office Supplies</div>
-                    <div><span class="checkbox">{{ $category === 'Maintenance' ? 'X' : '' }}</span>Purchase Requisition Maintenance</div>
+                    <table class="cat">
+                        <tr>
+                            <td class="box"><span class="checkbox">{{ $category === 'Investment' ? 'X' : '' }}</span></td>
+                            <td>Purchase Requisition Investment</td>
+                        </tr>
+                        <tr>
+                            <td class="box"><span class="checkbox">{{ $category === 'Office Supplies' ? 'X' : '' }}</span></td>
+                            <td>Purchase Requisition Office Supplies</td>
+                        </tr>
+                        <tr>
+                            <td class="box"><span class="checkbox">{{ $category === 'Maintenance' ? 'X' : '' }}</span></td>
+                            <td>Purchase Requisition Maintenance</td>
+                        </tr>
+                    </table>
                 </td>
                 <td class="right">
-                    <div><span class="checkbox">{{ $category === 'Services' ? 'X' : '' }}</span>Purchase Requisition Services</div>
-                    <div><span class="checkbox">{{ $category === 'Fixed Asset' ? 'X' : '' }}</span>Purchase Requisition Fixed Asset</div>
+                    <table class="cat">
+                        <tr>
+                            <td class="box"><span class="checkbox">{{ $category === 'Services' ? 'X' : '' }}</span></td>
+                            <td>Purchase Requisition Services</td>
+                        </tr>
+                        <tr>
+                            <td class="box"><span class="checkbox">{{ $category === 'Fixed Asset' ? 'X' : '' }}</span></td>
+                            <td>Purchase Requisition Fixed Asset</td>
+                        </tr>
+                    </table>
                 </td>
             </tr>
         </table>
