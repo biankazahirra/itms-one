@@ -4,53 +4,60 @@
     <meta charset="utf-8">
     <title>RAB {{ $budget->rab_number }}</title>
     <style>
-        @page { margin: 0; }
+        @page {
+            size: 792.13pt 612.08pt;
+            margin: 0;
+        }
 
         * { box-sizing: border-box; }
 
         body {
             font-family: Calibri, "dejavu sans", sans-serif;
-            font-size: 11pt;
+            font-size: 10.98pt;
             color: #000;
             margin: 0;
         }
 
         .logo {
             position: absolute;
-            left: 33.3pt;
-            top: 24pt;
-            width: 134.5pt;
-            height: 37.4pt;
+            left: 33.27pt;
+            top: 28.9pt;
+            width: 134.54pt;
+            height: 37.43pt;
         }
 
         .title {
             position: absolute;
             left: 0;
-            right: 0;
-            top: 36.5pt;
+            width: 792.13pt;
+            top: 32.5pt;
             text-align: center;
-            font-size: 14pt;
+            font-size: 13.98pt;
             font-weight: bold;
             line-height: 1.45;
         }
 
+        .title .work-name {
+            color: #404040;
+        }
+
         .table-wrap {
-            margin: 108pt 43.5pt 0 33.3pt;
+            margin: 107.7pt 43.5pt 0 33.27pt;
         }
 
         table.items {
             table-layout: fixed;
-            width: 715.4pt;
+            width: 715.36pt;
             border-collapse: collapse;
-            font-size: 11pt;
+            font-size: 10.98pt;
+            line-height: 1.16;
         }
 
         table.items th,
         table.items td {
-            border: 0.5pt solid #000;
-            padding: 1pt 2pt;
+            border: 0.1pt solid #000;
+            padding: 2pt 3pt;
             vertical-align: middle;
-            line-height: 1.15;
         }
 
         table.items tr {
@@ -58,58 +65,75 @@
         }
 
         table.items thead th {
+            background-color: #0BC3FD;
+            color: #000;
             font-weight: bold;
             text-align: center;
-            height: 18.8pt;
+            height: 18.4pt;
+            padding: 2pt 4pt;
         }
 
-        col.no { width: 4.07%; }
-        col.name { width: 24.67%; }
-        col.description { width: 28.32%; }
-        col.qty { width: 3.75%; }
-        col.unit { width: 8.26%; }
-        col.price { width: 15.15%; }
-        col.amount { width: 15.78%; }
+        th.no { width: 4.09%; }
+        th.name { width: 24.67%; }
+        th.description { width: 28.34%; }
+        th.qty { width: 3.77%; }
+        th.unit { width: 8.28%; }
+        th.price { width: 15.16%; }
+        th.amount { width: 15.69%; }
 
         td.no { text-align: center; }
         td.qty { text-align: center; }
         td.unit { text-align: center; }
-        td.price { text-align: right; white-space: nowrap; }
-        td.amount { text-align: right; white-space: nowrap; }
+        td.price { text-align: right; white-space: nowrap; padding-right: 3pt; }
+        td.amount { text-align: right; white-space: nowrap; padding-right: 3pt; }
 
         tr.total td {
             font-weight: bold;
-            height: 18.8pt;
+            height: 16.8pt;
+            padding: 1pt 3pt;
         }
 
-        td.total-label { text-align: right; }
-        td.total-value { text-align: right; white-space: nowrap; }
+        td.total-label {
+            text-align: center;
+        }
+
+        td.total-value {
+            background-color: #0BC3FD;
+            text-align: center;
+            white-space: nowrap;
+        }
 
         .sign-block {
-            margin: 12pt 43.5pt 0 33.3pt;
+            margin: 18pt 43.5pt 0 33.27pt;
             page-break-inside: avoid;
         }
 
         .date-line {
             text-align: right;
+            margin-bottom: 8pt;
         }
 
-        .signatures {
+        table.signatures {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 10pt;
             page-break-inside: avoid;
         }
 
-        .signatures td {
+        table.signatures td {
             vertical-align: top;
-            font-size: 11pt;
+            font-size: 10.98pt;
+            line-height: 1.16;
         }
 
-        .signatures td.left { width: 60%; padding-left: 21pt; }
-        .signatures td.right { width: 40%; }
+        table.signatures td.spacer { width: 56.5%; }
+        table.signatures td.left { width: 22.5%; }
+        table.signatures td.right { width: 21%; }
 
-        .signature-space { height: 40pt; }
+        .signature-space { height: 60pt; }
+
+        .signatory-name {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
@@ -130,29 +154,20 @@
 
     <div class="title">
         <div>Rencana Anggaran Biaya</div>
-        <div>{{ $version->work_name }}</div>
+        <div class="work-name">{{ $version->work_name }}</div>
     </div>
 
     <div class="table-wrap">
         <table class="items">
-            <colgroup>
-                <col class="no">
-                <col class="name">
-                <col class="description">
-                <col class="qty">
-                <col class="unit">
-                <col class="price">
-                <col class="amount">
-            </colgroup>
             <thead>
                 <tr>
-                    <th></th>
-                    <th>Nama Anggaran</th>
-                    <th>Deskripsi</th>
-                    <th>Qty</th>
-                    <th>Unit</th>
-                    <th>Harga</th>
-                    <th>Jumlah</th>
+                    <th class="no">No</th>
+                    <th class="name">Nama Anggaran</th>
+                    <th class="description">Deskripsi</th>
+                    <th class="qty">Qty</th>
+                    <th class="unit">Unit</th>
+                    <th class="price">Harga</th>
+                    <th class="amount">Jumlah</th>
                 </tr>
             </thead>
             <tbody>
@@ -180,16 +195,17 @@
 
         <table class="signatures">
             <tr>
+                <td class="spacer"></td>
                 <td class="left">
                     Disetujui,
                     <div class="signature-space"></div>
-                    Tb. Benny Kurniawan<br>
+                    <span class="signatory-name">Tb. Benny Kurniawan</span><br>
                     ITMS Manager
                 </td>
                 <td class="right">
                     Dibuat oleh,
                     <div class="signature-space"></div>
-                    Lazuardi Arsy<br>
+                    <span class="signatory-name">Lazuardi Arsy</span><br>
                     IT Senior Engineer
                 </td>
             </tr>
