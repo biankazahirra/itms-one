@@ -48,8 +48,13 @@
         table.items th,
         table.items td {
             border: 0.5pt solid #000;
-            padding: 2pt 4pt;
+            padding: 1pt 2pt;
             vertical-align: middle;
+            line-height: 1.15;
+        }
+
+        table.items tr {
+            page-break-inside: avoid;
         }
 
         table.items thead th {
@@ -81,7 +86,8 @@
         td.total-value { text-align: right; white-space: nowrap; }
 
         .sign-block {
-            margin: 22pt 43.5pt 0 33.3pt;
+            margin: 12pt 43.5pt 0 33.3pt;
+            page-break-inside: avoid;
         }
 
         .date-line {
@@ -91,7 +97,7 @@
         .signatures {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 14pt;
+            margin-top: 10pt;
             page-break-inside: avoid;
         }
 
@@ -103,7 +109,7 @@
         .signatures td.left { width: 60%; padding-left: 21pt; }
         .signatures td.right { width: 40%; }
 
-        .signature-space { height: 58pt; }
+        .signature-space { height: 40pt; }
     </style>
 </head>
 <body>
