@@ -405,6 +405,8 @@ it('generates version specific PDF and DOCX documents that can be downloaded aga
     Storage::disk('local')->assertExists($docx->storage_path);
 
     expect(Storage::disk('local')->get($pdf->storage_path))->toStartWith('%PDF')
+        ->toContain('Calibri-Bold')
+        ->toContain('Calibri-Italic')
         ->and($docx->checksum_sha256)->toHaveLength(64)
         ->and($docx->file_size)->toBeGreaterThan(1000);
 
@@ -426,7 +428,10 @@ it('generates version specific PDF and DOCX documents that can be downloaded aga
     })();
 
     expect($xml)->toHaveKey('word/document.xml')
-        ->and($xml['word/document.xml'])->toContain('LAPORAN HASIL SERAH TERIMA PEKERJAAN');
+        ->and($xml['word/document.xml'])->toContain('LAPORAN HASIL SERAH TERIMA PEKERJAAN')
+        ->toContain('<w:b')
+        ->toContain('<w:i')
+        ->toContain('w:bottom');
 
     $this->actingAs($this->user)
         ->get(route('documents.download', $pdf))

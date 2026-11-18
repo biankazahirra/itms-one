@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Support\Format;
 use Dompdf\Dompdf;
 use Dompdf\Options;
+use PhpOffice\PhpWord\Element\AbstractContainer;
 use PhpOffice\PhpWord\Element\Cell;
 use PhpOffice\PhpWord\Element\Table;
 use PhpOffice\PhpWord\IOFactory;
@@ -204,12 +205,17 @@ class LhstpDocumentService
         $section->addText('LAPORAN HASIL SERAH TERIMA PEKERJAAN', ['bold' => true, 'size' => 14], [
             'alignment' => 'center',
             'spaceBefore' => Converter::pointToTwip(6),
+            'borderBottomSize' => 7,
+            'borderBottomColor' => '000000',
+            'borderBottomStyle' => 'single',
         ]);
-        $section->addText('Nomor: '.$data['number'], ['size' => 12], ['alignment' => 'center']);
+        $this->richText($section, [
+            ['text' => 'Nomor: '.$data['number'], 'bold' => true],
+        ], ['size' => 12], ['alignment' => 'center']);
 
-        $paragraph('Kepada Yth.', [], ['spaceBefore' => Converter::pointToTwip(14)]);
-        $paragraph('Manager Accounting');
-        $paragraph('PT Krakatau Sarana Properti', [], ['spaceAfter' => Converter::pointToTwip(13.5)]);
+        $this->richText($section, [['text' => 'Kepada Yth.', 'bold' => true]], ['size' => 11], ['spaceBefore' => Converter::pointToTwip(14)]);
+        $this->richText($section, [['text' => 'Manager Accounting', 'bold' => true]], ['size' => 11]);
+        $this->richText($section, [['text' => 'PT Krakatau Sarana Properti', 'bold' => true]], ['size' => 11], ['spaceAfter' => Converter::pointToTwip(13.5)]);
 
         $fields = $section->addTable();
         foreach ([
@@ -219,19 +225,27 @@ class LhstpDocumentService
             'KONTRAKTOR' => $data['vendorName'],
         ] as $label => $value) {
             $row = $fields->addRow();
-            $this->tableText($row->addCell(Converter::pointToTwip(127.6)), $label);
-            $this->tableText($row->addCell(Converter::pointToTwip(14.2)), ':');
-            $this->tableText($row->addCell(Converter::pointToTwip(self::TEXT_WIDTH - 141.8)), $value);
+            $this->tableText($row->addCell(Converter::pointToTwip(127.6)), $label, null, true);
+            $this->tableText($row->addCell(Converter::pointToTwip(14.2)), ':', null, true);
+            $this->tableText($row->addCell(Converter::pointToTwip(self::TEXT_WIDTH - 141.8)), $value, null, true);
         }
+        $paragraph('', [], [
+            'borderBottomSize' => 4,
+            'borderBottomColor' => '000000',
+            'borderBottomStyle' => 'single',
+        ]);
 
-        $paragraph(
-            'Sesuai dengan surat '.$data['referenceType'].' dari '.$data['vendorName']
-            .' Nomor: '.$data['referenceNumber'].' tanggal '.$data['referenceDate']
-            .' Perihal Penyelesaian Pekerjaan periode '.$data['workPeriod'].' (terlampir),'
-            .' pihak-pihak yang bertanda tangan di bawah ini melaporkan bahwa:',
-            [],
-            ['alignment' => 'both', 'spaceBefore' => Converter::pointToTwip(28.4)],
-        );
+        $this->richText($section, [
+            ['text' => 'Sesuai dengan surat '.$data['referenceType'].' dari '],
+            ['text' => $data['vendorName'], 'bold' => true],
+            ['text' => ' Nomor: '],
+            ['text' => $data['referenceNumber'], 'bold' => true],
+            ['text' => ' tanggal '],
+            ['text' => $data['referenceDate'], 'bold' => true],
+            ['text' => ' Perihal Penyelesaian Pekerjaan periode '],
+            ['text' => $data['workPeriod'], 'bold' => true],
+            ['text' => ' (terlampir), pihak-pihak yang bertanda tangan di bawah ini melaporkan bahwa:'],
+        ], ['size' => 11], ['alignment' => 'both', 'spaceBefore' => Converter::pointToTwip(28.4)]);
 
         $paragraph(
             'Pada hari '.$data['opnameDate'].' telah dilaksanakan penelitian/opname pekerjaan bersama'
@@ -241,12 +255,35 @@ class LhstpDocumentService
         );
 
         $results = $section->addTable();
-        $this->numberedRow($results, '1.', 'Hasil pekerjaan dapat diterima sebagai Penyelesaian pekerjaan periode '.$data['workPeriod'].'.');
-        $this->numberedRow($results, '2.', 'Jangka waktu penyelesaian pekerjaan sesuai dengan Purchase Order Nomor : '
-            .$data['poNumber'].' adalah '.$data['contractMonths'].' bulan, terhitung dari tanggal '
-            .$data['contractStart'].' sampai dengan tanggal '.$data['contractEnd'].'.');
-        $this->numberedRow($results, '3.', 'Realisasi waktu pekerjaan adalah '.$data['realizationDays']
-            .' hari kalender terhitung tanggal '.$data['realizationStart'].' sampai dengan tanggal '.$data['realizationEnd'].'.');
+        $this->numberedRow($results, '1.', [
+            ['text' => 'Hasil pekerjaan dapat diterima sebagai Penyelesaian pekerjaan '],
+            ['text' => 'periode '.$data['workPeriod'], 'bold' => true],
+            ['text' => '.'],
+        ]);
+        $this->numberedRow($results, '2.', [
+            ['text' => 'Jangka waktu penyelesaian pekerjaan sesuai dengan '],
+            ['text' => 'Purchase Order Nomor :', 'bold' => true],
+            ['text' => ' '],
+            ['text' => $data['poNumber'], 'bold' => true],
+            ['text' => ' adalah '.$data['contractMonths'].' bulan, '],
+            ['text' => 'terhitung dari tanggal', 'bold' => true],
+            ['text' => ' '],
+            ['text' => $data['contractStart'], 'bold' => true],
+            ['text' => ' '],
+            ['text' => 'sampai dengan tanggal', 'bold' => true],
+            ['text' => ' '],
+            ['text' => $data['contractEnd'], 'bold' => true],
+            ['text' => '.'],
+        ]);
+        $this->numberedRow($results, '3.', [
+            ['text' => 'Realisasi waktu pekerjaan adalah '],
+            ['text' => $data['realizationDays'], 'bold' => true],
+            ['text' => ' hari kalender terhitung '],
+            ['text' => 'tanggal '.$data['realizationStart'], 'bold' => true],
+            ['text' => ' sampai dengan tanggal '],
+            ['text' => $data['realizationEnd'], 'bold' => true],
+            ['text' => '.'],
+        ]);
 
         $paragraph(
             'Kesimpulan dari hasil penelitian/opname pekerjaan di lapangan sebagai berikut:',
@@ -258,29 +295,25 @@ class LhstpDocumentService
         $this->numberedRow($conclusions, '1.', $data['workConclusion']);
         $this->numberedRow($conclusions, '2.', $data['paymentTerms']);
 
-        $paragraph(
-            'Pembayaran yang berhak diterima '.$data['vendorName'].' adalah sebagai berikut:',
-            ['size' => 10],
-            ['spaceBefore' => Converter::pointToTwip(12.4)],
-        );
+        $this->richText($section, [
+            ['text' => 'Pembayaran yang berhak diterima '],
+            ['text' => $data['vendorName'], 'bold' => true],
+            ['text' => ' adalah sebagai berikut:'],
+        ], ['size' => 10], ['spaceBefore' => Converter::pointToTwip(12.4)]);
 
         $payments = $section->addTable();
-        $this->paymentRow($payments, 'Nilai Kontrak', $data['contractValue']);
+        $this->paymentRow($payments, 'Nilai Kontrak', $data['contractValue'], null, true);
         $this->paymentRow($payments, 'Pembayaran', $data['paymentAmount'], $data['workName']);
         $this->paymentRow($payments, 'DPP LAIN (Rp '.$data['paymentAmount'].' x 11/12)', $data['dpp']);
         $this->paymentRow($payments, 'PPN ( Rp '.$data['dpp'].' x '.$data['ppnRate'].'%)', $data['ppn']);
-        $this->paymentRow($payments, 'Yang Harus Dibayarkan Termasuk PPN', $data['total']);
+        $this->paymentRow($payments, 'Yang Harus Dibayarkan Termasuk PPN', $data['total'], null, true);
 
-        $paragraph(
-            'Terbilang: ( '.$data['terbilang'].' )',
-            ['size' => 10],
-            ['spaceBefore' => Converter::pointToTwip(11)],
-        );
-        $paragraph(
-            '(Harga tersebut sudah termasuk PPN '.$data['ppnRate'].'%)',
-            ['size' => 10],
-            ['indent' => Converter::pointToTwip(42.6)],
-        );
+        $this->richText($section, [
+            ['text' => 'Terbilang: ( '.$data['terbilang'].' )', 'italic' => true],
+        ], ['size' => 10], ['spaceBefore' => Converter::pointToTwip(11)]);
+        $this->richText($section, [
+            ['text' => '(Harga tersebut sudah termasuk PPN '.$data['ppnRate'].'%)', 'italic' => true],
+        ], ['size' => 10], ['indent' => Converter::pointToTwip(42.6)]);
 
         $paragraph(
             'Dari tanggal diterbitkannya LHSTP ini, Pembayaran dibebankan kepada Cost Center Nomor : '.$data['costCenter'],
@@ -298,14 +331,24 @@ class LhstpDocumentService
         );
 
         $first = $section->addTable();
-        $this->partyRows($first, '1', 'Tb. Benny Kurniawan',
-            'IT & Management System Manager PT Krakatau Sarana Properti yang dalam hal ini bertindak'
-            .' untuk dan atas nama PT Krakatau Sarana Properti yang selanjutnya disebut PIHAK PERTAMA');
+        $this->partyRows($first, '1', 'Tb. Benny Kurniawan', [
+            ['text' => 'IT & Management System Manager '],
+            ['text' => 'PT Krakatau Sarana Properti', 'bold' => true],
+            ['text' => ' yang dalam hal ini bertindak untuk dan atas nama '],
+            ['text' => 'PT Krakatau Sarana Properti', 'bold' => true],
+            ['text' => ' yang selanjutnya disebut '],
+            ['text' => 'PIHAK PERTAMA', 'bold' => true],
+        ]);
 
         $second = $section->addTable();
-        $this->partyRows($second, '2', $data['representativeName'],
-            $data['representativePosition'].' '.$data['vendorName'].' yang dalam hal ini bertindak untuk'
-            .' dan atas nama '.$data['vendorName'].' yang selanjutnya disebut PIHAK KEDUA', true);
+        $this->partyRows($second, '2', $data['representativeName'], [
+            ['text' => $data['representativePosition'].' '],
+            ['text' => $data['vendorName'], 'bold' => true],
+            ['text' => ' yang dalam hal ini bertindak untuk dan atas nama '],
+            ['text' => $data['vendorName'], 'bold' => true],
+            ['text' => ' yang selanjutnya disebut '],
+            ['text' => 'PIHAK KEDUA', 'bold' => true],
+        ], true);
 
         $paragraph(
             'Demikian Laporan Hasil Serah Terima Pekerjaan ini dibuat dengan sebenarnya untuk dapat'
@@ -330,13 +373,19 @@ class LhstpDocumentService
             $this->tableText($row->addCell(Converter::pointToTwip(self::TEXT_WIDTH / 2)), $company, 'center');
         }
         $signatures->addRow(Converter::pointToTwip(53.8));
+        $signatureLine = [
+            'borderBottomSize' => 6,
+            'borderBottomColor' => '000000',
+            'borderBottomStyle' => 'single',
+        ];
         foreach ([
-            [$data['representativeName'], 'Tb. Benny Kurniawan'],
-            [$data['representativePosition'], 'IT & Management System Manager'],
-        ] as [$secondName, $firstName]) {
+            [$data['representativeName'], 'Tb. Benny Kurniawan', true],
+            [$data['representativePosition'], 'IT & Management System Manager', false],
+        ] as [$secondName, $firstName, $withLine]) {
             $row = $signatures->addRow();
-            $this->tableText($row->addCell(Converter::pointToTwip(self::TEXT_WIDTH / 2)), $secondName, 'center');
-            $this->tableText($row->addCell(Converter::pointToTwip(self::TEXT_WIDTH / 2)), $firstName, 'center');
+            $style = $withLine ? $signatureLine : [];
+            $this->tableText($row->addCell(Converter::pointToTwip(self::TEXT_WIDTH / 2)), $secondName, 'center', false, $style);
+            $this->tableText($row->addCell(Converter::pointToTwip(self::TEXT_WIDTH / 2)), $firstName, 'center', false, $style);
         }
 
         $temporary = tempnam(sys_get_temp_dir(), 'lhstp-docx-');
@@ -360,52 +409,90 @@ class LhstpDocumentService
         return $output;
     }
 
-    private function tableText(Cell $cell, string $text, ?string $alignment = null): void
-    {
-        $cell->addText($text, ['name' => 'Calibri', 'size' => 11], [
+    private function tableText(
+        Cell $cell,
+        string $text,
+        ?string $alignment = null,
+        bool $bold = false,
+        array $style = [],
+    ): void {
+        $cell->addText($text, ['name' => 'Calibri', 'size' => 11] + ($bold ? ['bold' => true] : []), [
             'lineHeight' => 1.22,
             'spaceAfter' => 0,
-        ] + ($alignment === null ? [] : ['alignment' => $alignment]));
+        ] + ($alignment === null ? [] : ['alignment' => $alignment]) + $style);
+    }
+
+    /**
+     * Add a paragraph made of styled segments, matching the template's
+     * bold and italic runs.
+     *
+     * @param  AbstractContainer  $container
+     * @param  array<int, array{text: string, bold?: bool, italic?: bool}>  $segments
+     */
+    private function richText($container, array $segments, array $font, array $style = []): void
+    {
+        $run = $container->addTextRun(['lineHeight' => 1.22, 'spaceAfter' => 0] + $style);
+
+        foreach ($segments as $segment) {
+            $run->addText($segment['text'], ['name' => 'Calibri'] + $font + array_filter([
+                'bold' => $segment['bold'] ?? false,
+                'italic' => $segment['italic'] ?? false,
+            ]));
+        }
     }
 
     /**
      * @param  Table  $table
+     * @param  string|array<int, array{text: string, bold?: bool, italic?: bool}>  $text
      */
-    private function numberedRow($table, string $number, string $text): void
+    private function numberedRow($table, string $number, string|array $text): void
     {
         $row = $table->addRow();
         $this->tableText($row->addCell(Converter::pointToTwip(21.3)), $number);
-        $this->tableText($row->addCell(Converter::pointToTwip(self::TEXT_WIDTH - 21.3)), $text);
+        $cell = $row->addCell(Converter::pointToTwip(self::TEXT_WIDTH - 21.3));
+
+        if (is_array($text)) {
+            $this->richText($cell, $text, ['size' => 11]);
+        } else {
+            $this->tableText($cell, $text);
+        }
     }
 
     /**
      * @param  Table  $table
      */
-    private function paymentRow($table, string $label, string $amount, ?string $subLabel = null): void
+    private function paymentRow($table, string $label, string $amount, ?string $subLabel = null, bool $bold = false): void
     {
         $row = $table->addRow();
         $cell = $row->addCell(Converter::pointToTwip(300));
-        $this->tableText($cell, $label, null);
+        $this->tableText($cell, $label, null, $bold);
         $this->tableText($cell, $subLabel ?? '', null);
-        $this->tableText($row->addCell(Converter::pointToTwip(self::TEXT_WIDTH - 300)), '= Rp '.$amount, 'right');
+        $this->tableText($row->addCell(Converter::pointToTwip(self::TEXT_WIDTH - 300)), '= Rp '.$amount, 'right', $bold);
     }
 
     /**
      * @param  Table  $table
+     * @param  string|array<int, array{text: string, bold?: bool, italic?: bool}>  $position
      */
-    private function partyRows($table, string $number, string $name, string $position, bool $spaced = false): void
+    private function partyRows($table, string $number, string $name, string|array $position, bool $spaced = false): void
     {
         $row = $table->addRow(Converter::pointToTwip($spaced ? 34 : 0));
         $this->tableText($row->addCell(Converter::pointToTwip(13.5)), $number);
         $this->tableText($row->addCell(Converter::pointToTwip(46.7)), 'Nama');
         $this->tableText($row->addCell(Converter::pointToTwip(13)), ':');
-        $this->tableText($row->addCell(Converter::pointToTwip(self::TEXT_WIDTH - 73.2)), $name);
+        $this->tableText($row->addCell(Converter::pointToTwip(self::TEXT_WIDTH - 73.2)), $name, null, true);
 
         $row = $table->addRow();
         $this->tableText($row->addCell(Converter::pointToTwip(13.5)), '');
         $this->tableText($row->addCell(Converter::pointToTwip(46.7)), 'Jabatan');
         $this->tableText($row->addCell(Converter::pointToTwip(13)), ':');
-        $this->tableText($row->addCell(Converter::pointToTwip(self::TEXT_WIDTH - 73.2)), $position);
+        $cell = $row->addCell(Converter::pointToTwip(self::TEXT_WIDTH - 73.2));
+
+        if (is_array($position)) {
+            $this->richText($cell, $position, ['size' => 11]);
+        } else {
+            $this->tableText($cell, $position);
+        }
     }
 
     private function filename(Lhstp $lhstp, LhstpVersion $version, string $format): string
@@ -426,6 +513,7 @@ class LhstpDocumentService
     {
         $regular = str_replace('\\', '/', 'C:\\Windows\\Fonts\\calibri.ttf');
         $bold = str_replace('\\', '/', 'C:\\Windows\\Fonts\\calibrib.ttf');
+        $italic = str_replace('\\', '/', 'C:\\Windows\\Fonts\\calibrii.ttf');
 
         $metrics = $dompdf->getFontMetrics();
 
@@ -440,6 +528,13 @@ class LhstpDocumentService
             $metrics->registerFont(
                 ['family' => 'Calibri', 'style' => 'normal', 'weight' => 'bold'],
                 'file://'.$bold,
+            );
+        }
+
+        if (is_file($italic)) {
+            $metrics->registerFont(
+                ['family' => 'Calibri', 'style' => 'italic', 'weight' => 'normal'],
+                'file://'.$italic,
             );
         }
     }

@@ -53,6 +53,39 @@
             font-size: 12pt;
         }
 
+        .rule {
+            position: absolute;
+            background: #000;
+        }
+
+        .rule-title {
+            left: 180.63pt;
+            top: 102.7pt;
+            width: 255.35pt;
+            height: 0.9pt;
+        }
+
+        .rule-fields {
+            left: 70.5pt;
+            top: 254.82pt;
+            width: 475.67pt;
+            height: 0.5pt;
+        }
+
+        .rule-sign-left {
+            left: 124.02pt;
+            top: 455.05pt;
+            width: 101.6pt;
+            height: 0.7pt;
+        }
+
+        .rule-sign-right {
+            left: 368.95pt;
+            top: 455.05pt;
+            width: 94.72pt;
+            height: 0.7pt;
+        }
+
         .content {
             position: absolute;
             left: 72pt;
@@ -134,39 +167,41 @@
     <img class="letterhead" src="data:image/png;base64,{{ base64_encode(file_get_contents(resource_path('assets/lhstp-logo.png'))) }}" alt="Logo">
 
     <div class="title">LAPORAN HASIL SERAH TERIMA PEKERJAAN</div>
-    <div class="nomor">Nomor: {{ $number }}</div>
+    <div class="rule rule-title"></div>
+    <div class="nomor"><strong>Nomor: {{ $number }}</strong></div>
 
     <div class="content">
-        <p>Kepada Yth.<br>Manager Accounting<br>PT Krakatau Sarana Properti</p>
+        <p><strong>Kepada Yth.<br>Manager Accounting<br>PT Krakatau Sarana Properti</strong></p>
 
         <table class="fields">
             <tr>
-                <td class="label">PEKERJAAN</td>
-                <td class="colon">:</td>
-                <td>{{ $workName }}</td>
+                <td class="label"><strong>PEKERJAAN</strong></td>
+                <td class="colon"><strong>:</strong></td>
+                <td><strong>{{ $workName }}</strong></td>
             </tr>
             <tr>
-                <td class="label">NO. PURCHASE ORDER</td>
-                <td class="colon">:</td>
-                <td>{{ $poNumber }}</td>
+                <td class="label"><strong>NO. PURCHASE ORDER</strong></td>
+                <td class="colon"><strong>:</strong></td>
+                <td><strong>{{ $poNumber }}</strong></td>
             </tr>
             <tr>
-                <td class="label">TANGGAL KONTRAK</td>
-                <td class="colon">:</td>
-                <td>{{ $contractDate }}</td>
+                <td class="label"><strong>TANGGAL KONTRAK</strong></td>
+                <td class="colon"><strong>:</strong></td>
+                <td><strong>{{ $contractDate }}</strong></td>
             </tr>
             <tr>
-                <td class="label">KONTRAKTOR</td>
-                <td class="colon">:</td>
-                <td>{{ $vendorName }}</td>
+                <td class="label"><strong>KONTRAKTOR</strong></td>
+                <td class="colon"><strong>:</strong></td>
+                <td><strong>{{ $vendorName }}</strong></td>
             </tr>
         </table>
 
         <p class="ref">
-            Sesuai dengan surat {{ $referenceType }} dari {{ $vendorName }}
-            Nomor: {{ $referenceNumber }} tanggal {{ $referenceDate }}
-            Perihal Penyelesaian Pekerjaan periode {{ $workPeriod }} (terlampir),
-            pihak-pihak yang bertanda tangan di bawah ini melaporkan bahwa:
+            Sesuai dengan surat {{ $referenceType }} dari <strong>{{ $vendorName }}</strong>
+            <strong>Nomor:</strong> <strong>{{ $referenceNumber }}</strong> <strong>tanggal</strong>
+            <strong>{{ $referenceDate }}</strong> <strong>Perihal Penyelesaian Pekerjaan periode</strong>
+            <strong>{{ $workPeriod }}</strong> (terlampir), pihak-pihak yang bertanda tangan di bawah ini
+            melaporkan bahwa:
         </p>
 
         <p class="opname">
@@ -177,21 +212,25 @@
         <table class="items">
             <tr>
                 <td class="no">1.</td>
-                <td class="txt">Hasil pekerjaan dapat diterima sebagai Penyelesaian pekerjaan periode {{ $workPeriod }}.</td>
+                <td class="txt">Hasil pekerjaan dapat diterima sebagai Penyelesaian pekerjaan
+                    <strong>periode {{ $workPeriod }}</strong>.</td>
             </tr>
             <tr>
                 <td class="no">2.</td>
                 <td class="txt">
-                    Jangka waktu penyelesaian pekerjaan sesuai dengan Purchase Order Nomor :
-                    {{ $poNumber }} adalah {{ $contractMonths }} bulan, terhitung dari tanggal
-                    {{ $contractStart }} sampai dengan tanggal {{ $contractEnd }}.
+                    Jangka waktu penyelesaian pekerjaan sesuai dengan
+                    <strong>Purchase Order Nomor :</strong> <strong>{{ $poNumber }}</strong> adalah
+                    {{ $contractMonths }} bulan, <strong>terhitung dari tanggal</strong>
+                    <strong>{{ $contractStart }}</strong> <strong>sampai dengan tanggal</strong>
+                    <strong>{{ $contractEnd }}</strong>.
                 </td>
             </tr>
             <tr>
                 <td class="no">3.</td>
                 <td class="txt">
-                    Realisasi waktu pekerjaan adalah {{ $realizationDays }} hari kalender terhitung
-                    tanggal {{ $realizationStart }} sampai dengan tanggal {{ $realizationEnd }}.
+                    Realisasi waktu pekerjaan adalah <strong>{{ $realizationDays }}</strong> hari kalender
+                    terhitung <strong>tanggal {{ $realizationStart }}</strong> sampai dengan tanggal
+                    <strong>{{ $realizationEnd }}</strong>.
                 </td>
             </tr>
         </table>
@@ -210,15 +249,15 @@
         </table>
 
         <div class="payment">
-            <p>Pembayaran yang berhak diterima {{ $vendorName }} adalah sebagai berikut:</p>
+            <p>Pembayaran yang berhak diterima <strong>{{ $vendorName }}</strong> adalah sebagai berikut:</p>
 
             <table>
                 <tr>
-                    <td class="label">Nilai Kontrak</td>
-                    <td class="amount">= Rp {{ $contractValue }}</td>
+                    <td class="label"><strong>Nilai Kontrak</strong></td>
+                    <td class="amount"><strong>= Rp {{ $contractValue }}</strong></td>
                 </tr>
                 <tr>
-                    <td class="label">Pembayaran<br><span class="sub">{{ $workName }}</span></td>
+                    <td class="label"><strong>Pembayaran</strong><br><span class="sub">{{ $workName }}</span></td>
                     <td class="amount">= Rp {{ $paymentAmount }}</td>
                 </tr>
                 <tr>
@@ -230,14 +269,14 @@
                     <td class="amount">= Rp {{ $ppn }}</td>
                 </tr>
                 <tr>
-                    <td class="label">Yang Harus Dibayarkan Termasuk PPN</td>
-                    <td class="amount">= Rp {{ $total }}</td>
+                    <td class="label"><strong>Yang Harus Dibayarkan Termasuk PPN</strong></td>
+                    <td class="amount">= Rp <strong>{{ $total }}</strong></td>
                 </tr>
             </table>
 
             <p class="terbilang">
-                Terbilang: ( {{ $terbilang }} )<br>
-                <span class="ppn-note">(Harga tersebut sudah termasuk PPN {{ $ppnRate }}%)</span>
+                <em>Terbilang: ( {{ $terbilang }} )</em><br>
+                <span class="ppn-note"><em>(Harga tersebut sudah termasuk PPN {{ $ppnRate }}%)</em></span>
             </p>
         </div>
 
@@ -245,10 +284,13 @@
             Dari tanggal diterbitkannya LHSTP ini, Pembayaran dibebankan kepada Cost Center Nomor : {{ $costCenter }}
         </p>
     </div>
+    <div class="rule rule-fields"></div>
 </div>
 
 <div class="page">
     <img class="letterhead" src="data:image/png;base64,{{ base64_encode(file_get_contents(resource_path('assets/lhstp-logo.png'))) }}" alt="Logo">
+    <div class="rule rule-sign-left"></div>
+    <div class="rule rule-sign-right"></div>
 
     <div class="page-2">
         <p>Berdasarkan perincian pekerjaan dan perhitungan pembayaran di atas, maka yang bertanda tangan di bawah ini:</p>
@@ -258,16 +300,16 @@
                 <td class="no">1</td>
                 <td class="label">Nama</td>
                 <td class="colon">:</td>
-                <td>Tb. Benny Kurniawan</td>
+                <td><strong>Tb. Benny Kurniawan</strong></td>
             </tr>
             <tr>
                 <td class="no"></td>
                 <td class="label">Jabatan</td>
                 <td class="colon">:</td>
                 <td>
-                    IT &amp; Management System Manager PT Krakatau Sarana Properti yang dalam hal ini
-                    bertindak untuk dan atas nama PT Krakatau Sarana Properti yang selanjutnya disebut
-                    PIHAK PERTAMA
+                    IT &amp; Management System Manager <strong>PT Krakatau Sarana Properti</strong> yang dalam hal ini
+                    bertindak untuk dan atas nama <strong>PT Krakatau Sarana Properti</strong> yang selanjutnya disebut
+                    <strong>PIHAK PERTAMA</strong>
                 </td>
             </tr>
         </table>
@@ -277,15 +319,16 @@
                 <td class="no">2</td>
                 <td class="label">Nama</td>
                 <td class="colon">:</td>
-                <td>{{ $representativeName }}</td>
+                <td><strong>{{ $representativeName }}</strong></td>
             </tr>
             <tr>
                 <td class="no"></td>
                 <td class="label">Jabatan</td>
                 <td class="colon">:</td>
                 <td>
-                    {{ $representativePosition }} {{ $vendorName }} yang dalam hal ini bertindak untuk
-                    dan atas nama {{ $vendorName }} yang selanjutnya disebut PIHAK KEDUA
+                    {{ $representativePosition }} <strong>{{ $vendorName }}</strong> yang dalam hal ini bertindak untuk
+                    dan atas nama <strong>{{ $vendorName }}</strong> yang selanjutnya disebut
+                    <strong>PIHAK KEDUA</strong>
                 </td>
             </tr>
         </table>
@@ -323,6 +366,3 @@
 </div>
 </body>
 </html>
-
-
-
