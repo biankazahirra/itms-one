@@ -26,20 +26,20 @@ class LhstpPaymentCalculator
     public function calculate(string $paymentAmount, string $ppnRate, string $ppnStatus): array
     {
         $amount = Money::scale($paymentAmount, 2);
+        $base = $this->paymentBeforePpnRaw($paymentAmount, $ppnRate, $ppnStatus);
         $rate = bcdiv(Money::scale($ppnRate, 4), '100', self::SCALE);
 
         // DPP LAIN is eleven twelfths of the taxable base.
         $elevenTwelfths = fn (string $value): string => bcdiv(bcmul($value, '11', self::SCALE), '12', self::SCALE);
 
         if ($ppnStatus === Contract::PPN_INCLUDED) {
-            $gross = bcadd('1', bcdiv(bcmul($rate, '11', self::SCALE), '12', self::SCALE), self::SCALE);
-            $dpp = $elevenTwelfths(bcdiv($amount, $gross, self::SCALE));
+            $dpp = $elevenTwelfths($base);
             $ppn = bcmul($dpp, $rate, self::SCALE);
             $total = bcround($amount, 0, RoundingMode::HalfAwayFromZero);
         } else {
-            $dpp = $elevenTwelfths($amount);
+            $dpp = $elevenTwelfths($base);
             $ppn = bcmul($dpp, $rate, self::SCALE);
-            $total = bcround(bcadd($amount, $ppn, self::SCALE), 0, RoundingMode::HalfAwayFromZero);
+            $total = bcround(bcadd($base, $ppn, self::SCALE), 0, RoundingMode::HalfAwayFromZero);
         }
 
         return [
@@ -47,5 +47,31 @@ class LhstpPaymentCalculator
             'ppn_amount' => bcround($ppn, 2, RoundingMode::HalfAwayFromZero),
             'total_payment' => bcadd($total, '0', 2),
         ];
+    }
+
+    /**
+     * Recover the payment value before PPN when the entered amount is the
+     * final payable amount (contract already includes PPN).
+     *
+     * The printed chain is: base x 11/12 = DPP, DPP x rate = PPN, and
+     * base + PPN = the original entered amount.
+     */
+    public function paymentBeforePpn(string $paymentAmount, string $ppnRate, string $ppnStatus): string
+    {
+        return bcround($this->paymentBeforePpnRaw($paymentAmount, $ppnRate, $ppnStatus), 2, RoundingMode::HalfAwayFromZero);
+    }
+
+    private function paymentBeforePpnRaw(string $paymentAmount, string $ppnRate, string $ppnStatus): string
+    {
+        $amount = Money::scale($paymentAmount, 2);
+
+        if ($ppnStatus !== Contract::PPN_INCLUDED) {
+            return $amount;
+        }
+
+        $rate = bcdiv(Money::scale($ppnRate, 4), '100', self::SCALE);
+        $gross = bcadd('1', bcdiv(bcmul($rate, '11', self::SCALE), '12', self::SCALE), self::SCALE);
+
+        return bcdiv($amount, $gross, self::SCALE);
     }
 }

@@ -9,6 +9,7 @@ use App\Models\LhstpVersionTermin;
 use App\Models\RecycleBinItem;
 use App\Models\User;
 use App\Models\Vendor;
+use App\Services\LhstpPaymentCalculator;
 use App\Services\LhstpService;
 use App\Support\Format;
 use App\Support\Terbilang;
@@ -451,6 +452,52 @@ it('generates version specific PDF and DOCX documents that can be downloaded aga
 it('calculates realization days inclusively', function () {
     expect(app(LhstpService::class)->realizationDays('2026-11-01', '2026-11-05'))->toBe(5)
         ->and(app(LhstpService::class)->realizationDays('2026-11-01', '2026-11-01'))->toBe(1);
+});
+
+it('prints the pre-PPN value, DPP, PPN, and total for an included-PPN contract', function () {
+    Storage::fake('local');
+
+    $contract = contractFor([
+        'po_number' => 'PO/ITMS/2026/202',
+        'ppn_status' => Contract::PPN_INCLUDED,
+        'monthly_payment_amount' => '33300000',
+    ]);
+
+    $this->actingAs($this->user)->post(route('lhstp.store'), lhstpPayload([
+        'contract_id' => $contract->id,
+        'payment_amount' => '33300000',
+    ]))->assertRedirect();
+
+    $lhstp = Lhstp::firstOrFail();
+    $this->actingAs($this->user)->post(route('lhstp.finalize', $lhstp), ['generate_document' => '0']);
+    $this->actingAs($this->user)
+        ->post(route('lhstp.documents.store', $lhstp), ['document_format' => 'DOCX'])
+        ->assertRedirect();
+
+    $docx = GeneratedDocument::where('version_id', $lhstp->currentVersion->id)->firstOrFail();
+    $zip = new ZipArchive;
+    $zip->open(Storage::disk('local')->path($docx->storage_path));
+    $xml = $zip->getFromName('word/document.xml');
+    $zip->close();
+
+    expect($xml)->toContain('Rp 30.000.000,00')
+        ->toContain('Rp 27.500.000,00')
+        ->toContain('Rp 3.300.000,00')
+        ->toContain('Rp 33.300.000,00');
+});
+
+it('recovers the pre-PPN value from a total that already includes PPN', function () {
+    $calculator = app(LhstpPaymentCalculator::class);
+
+    $base = $calculator->paymentBeforePpn('33300000', '12', Contract::PPN_INCLUDED);
+    $result = $calculator->calculate('33300000', '12', Contract::PPN_INCLUDED);
+
+    expect($base)->toBe('30000000.00')
+        ->and($result['dpp_lain'])->toBe('27500000.00')
+        ->and($result['ppn_amount'])->toBe('3300000.00')
+        ->and($result['total_payment'])->toBe('33300000.00')
+        ->and(bcadd($base, $result['ppn_amount'], 2))->toBe('33300000.00')
+        ->and($calculator->paymentBeforePpn('12000000', '12', Contract::PPN_EXCLUDED))->toBe('12000000.00');
 });
 
 it('rounds contract months up when the end date is within three days', function () {

@@ -27,6 +27,7 @@ class LhstpDocumentService
     public function __construct(
         private readonly PrivateFileService $files,
         private readonly ActivityLogService $activity,
+        private readonly LhstpPaymentCalculator $calculator,
     ) {}
 
     /**
@@ -128,7 +129,11 @@ class LhstpDocumentService
             'workConclusion' => $version->work_conclusion,
             'paymentTerms' => $version->payment_terms,
             'contractValue' => Format::angka($version->contract_value_snapshot, 2),
-            'paymentAmount' => Format::angka($version->payment_amount, 2),
+            'paymentAmount' => Format::angka($this->calculator->paymentBeforePpn(
+                (string) $version->payment_amount,
+                (string) $version->ppn_rate,
+                (string) $version->ppn_status_snapshot,
+            ), 2),
             'dpp' => Format::angka($version->dpp_lain, 2),
             'ppn' => Format::angka($version->ppn_amount, 2),
             'total' => Format::angka($version->total_payment, 2),
