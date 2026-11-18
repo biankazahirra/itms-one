@@ -9,6 +9,7 @@ use App\Models\RecycleBinItem;
 use App\Models\User;
 use App\Models\Vendor;
 use App\Services\LhstpService;
+use App\Support\Format;
 use App\Support\Terbilang;
 use Illuminate\Support\Facades\Storage;
 
@@ -432,7 +433,8 @@ it('generates version specific PDF and DOCX documents that can be downloaded aga
         ->toContain('<w:b')
         ->toContain('<w:i')
         ->toContain('w:bottom')
-        ->toContain('<w:u');
+        ->toContain('<w:u')
+        ->toContain('Selasa, 17 November 2026');
 
     $this->actingAs($this->user)
         ->get(route('documents.download', $pdf))
@@ -448,6 +450,11 @@ it('generates version specific PDF and DOCX documents that can be downloaded aga
 it('calculates realization days inclusively', function () {
     expect(app(LhstpService::class)->realizationDays('2026-11-01', '2026-11-05'))->toBe(5)
         ->and(app(LhstpService::class)->realizationDays('2026-11-01', '2026-11-01'))->toBe(1);
+});
+
+it('formats the opname date with its Indonesian weekday', function () {
+    expect(Format::tanggalHari('2026-11-03'))->toBe('Selasa, 03 November 2026')
+        ->and(Format::tanggalHari('2026-11-17'))->toBe('Selasa, 17 November 2026');
 });
 
 it('formats rupiah amounts as Indonesian terbilang', function () {

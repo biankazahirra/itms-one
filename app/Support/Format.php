@@ -41,6 +41,18 @@ final class Format
     }
 
     /**
+     * Format a date with its Indonesian weekday, for printed documents.
+     */
+    public static function tanggalHari(DateTimeInterface|string|null $date): string
+    {
+        if ($date === null || $date === '') {
+            return '—';
+        }
+
+        return Carbon::parse($date)->locale('id')->translatedFormat('l, d F Y');
+    }
+
+    /**
      * Format a date and time for Indonesian user-facing display.
      */
     public static function tanggalWaktu(DateTimeInterface|string|null $date): string

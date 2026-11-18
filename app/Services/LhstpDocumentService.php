@@ -118,7 +118,7 @@ class LhstpDocumentService
             'referenceNumber' => $version->reference_document_number,
             'referenceDate' => Format::tanggal($version->reference_document_date),
             'workPeriod' => $version->work_period,
-            'opnameDate' => Format::tanggal($version->opname_date),
+            'opnameDate' => Format::tanggalHari($version->opname_date),
             'contractMonths' => $version->contractMonths(),
             'contractStart' => Format::tanggal($version->contract_start_snapshot),
             'contractEnd' => Format::tanggal($version->contract_end_snapshot),
