@@ -258,6 +258,28 @@
                 referenceDate.value = referenceType.dataset.poDate || '';
             });
         }
+
+        var workPeriod = document.getElementById('work_period');
+        var workConclusion = document.getElementById('work_conclusion');
+        var conclusionPrefix = @json('Hasil pekerjaan dapat diterima sebagai Penyelesaian pekerjaan periode ');
+
+        if (workPeriod && workConclusion) {
+            // Kalimat bawaan kesimpulan mengikuti periode yang diisi user.
+            workPeriod.addEventListener('input', function () {
+                var period = workPeriod.value.trim();
+                var current = workConclusion.value.trim();
+
+                if (period === '') {
+                    return;
+                }
+
+                if (current !== '' && (!current.startsWith(conclusionPrefix) || !current.endsWith('.'))) {
+                    return;
+                }
+
+                workConclusion.value = conclusionPrefix + period + '.';
+            });
+        }
     })();
 </script>
 
