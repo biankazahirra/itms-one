@@ -53,37 +53,21 @@
             font-size: 12pt;
         }
 
-        .rule {
-            position: absolute;
-            background: #000;
-        }
-
-        .rule-title {
-            left: 180.63pt;
-            top: 102.7pt;
-            width: 255.35pt;
-            height: 0.9pt;
-        }
-
         .rule-fields {
+            position: absolute;
             left: 70.5pt;
             top: 254.82pt;
             width: 475.67pt;
             height: 0.5pt;
+            background: #000;
         }
 
-        .rule-sign-left {
-            left: 124.02pt;
-            top: 455.05pt;
-            width: 101.6pt;
-            height: 0.7pt;
+        .underline-title {
+            text-decoration: underline;
         }
 
-        .rule-sign-right {
-            left: 368.95pt;
-            top: 455.05pt;
-            width: 94.72pt;
-            height: 0.7pt;
+        .underline-signature {
+            text-decoration: underline;
         }
 
         .content {
@@ -166,8 +150,7 @@
 <div class="page">
     <img class="letterhead" src="data:image/png;base64,{{ base64_encode(file_get_contents(resource_path('assets/lhstp-logo.png'))) }}" alt="Logo">
 
-    <div class="title">LAPORAN HASIL SERAH TERIMA PEKERJAAN</div>
-    <div class="rule rule-title"></div>
+    <div class="title"><span class="underline-title">LAPORAN HASIL SERAH TERIMA PEKERJAAN</span></div>
     <div class="nomor"><strong>Nomor: {{ $number }}</strong></div>
 
     <div class="content">
@@ -284,13 +267,11 @@
             Dari tanggal diterbitkannya LHSTP ini, Pembayaran dibebankan kepada Cost Center Nomor : {{ $costCenter }}
         </p>
     </div>
-    <div class="rule rule-fields"></div>
+    <div class="rule-fields"></div>
 </div>
 
 <div class="page">
     <img class="letterhead" src="data:image/png;base64,{{ base64_encode(file_get_contents(resource_path('assets/lhstp-logo.png'))) }}" alt="Logo">
-    <div class="rule rule-sign-left"></div>
-    <div class="rule rule-sign-right"></div>
 
     <div class="page-2">
         <p>Berdasarkan perincian pekerjaan dan perhitungan pembayaran di atas, maka yang bertanda tangan di bawah ini:</p>
@@ -354,8 +335,8 @@
                 <td class="signature-space"></td>
             </tr>
             <tr>
-                <td>{{ $representativeName }}</td>
-                <td>Tb. Benny Kurniawan</td>
+                <td><span class="underline-signature">{{ $representativeName }}</span></td>
+                <td><span class="underline-signature">Tb. Benny Kurniawan</span></td>
             </tr>
             <tr>
                 <td>{{ $representativePosition }}</td>

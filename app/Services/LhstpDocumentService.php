@@ -202,12 +202,13 @@ class LhstpDocumentService
             ['lineHeight' => 1.22, 'spaceAfter' => 0] + $style,
         );
 
-        $section->addText('LAPORAN HASIL SERAH TERIMA PEKERJAAN', ['bold' => true, 'size' => 14], [
+        $section->addText('LAPORAN HASIL SERAH TERIMA PEKERJAAN', [
+            'bold' => true,
+            'size' => 14,
+            'underline' => 'single',
+        ], [
             'alignment' => 'center',
             'spaceBefore' => Converter::pointToTwip(6),
-            'borderBottomSize' => 7,
-            'borderBottomColor' => '000000',
-            'borderBottomStyle' => 'single',
         ]);
         $this->richText($section, [
             ['text' => 'Nomor: '.$data['number'], 'bold' => true],
@@ -373,20 +374,13 @@ class LhstpDocumentService
             $this->tableText($row->addCell(Converter::pointToTwip(self::TEXT_WIDTH / 2)), $company, 'center');
         }
         $signatures->addRow(Converter::pointToTwip(53.8));
-        $signatureLine = [
-            'borderBottomSize' => 6,
-            'borderBottomColor' => '000000',
-            'borderBottomStyle' => 'single',
-        ];
-        foreach ([
-            [$data['representativeName'], 'Tb. Benny Kurniawan', true],
-            [$data['representativePosition'], 'IT & Management System Manager', false],
-        ] as [$secondName, $firstName, $withLine]) {
-            $row = $signatures->addRow();
-            $style = $withLine ? $signatureLine : [];
-            $this->tableText($row->addCell(Converter::pointToTwip(self::TEXT_WIDTH / 2)), $secondName, 'center', false, $style);
-            $this->tableText($row->addCell(Converter::pointToTwip(self::TEXT_WIDTH / 2)), $firstName, 'center', false, $style);
-        }
+        $row = $signatures->addRow();
+        $this->tableText($row->addCell(Converter::pointToTwip(self::TEXT_WIDTH / 2)), $data['representativeName'], 'center', false, [], true);
+        $this->tableText($row->addCell(Converter::pointToTwip(self::TEXT_WIDTH / 2)), 'Tb. Benny Kurniawan', 'center', false, [], true);
+
+        $row = $signatures->addRow();
+        $this->tableText($row->addCell(Converter::pointToTwip(self::TEXT_WIDTH / 2)), $data['representativePosition'], 'center');
+        $this->tableText($row->addCell(Converter::pointToTwip(self::TEXT_WIDTH / 2)), 'IT & Management System Manager', 'center');
 
         $temporary = tempnam(sys_get_temp_dir(), 'lhstp-docx-');
 
@@ -415,8 +409,13 @@ class LhstpDocumentService
         ?string $alignment = null,
         bool $bold = false,
         array $style = [],
+        bool $underline = false,
     ): void {
-        $cell->addText($text, ['name' => 'Calibri', 'size' => 11] + ($bold ? ['bold' => true] : []), [
+        $font = ['name' => 'Calibri', 'size' => 11]
+            + ($bold ? ['bold' => true] : [])
+            + ($underline ? ['underline' => 'single'] : []);
+
+        $cell->addText($text, $font, [
             'lineHeight' => 1.22,
             'spaceAfter' => 0,
         ] + ($alignment === null ? [] : ['alignment' => $alignment]) + $style);

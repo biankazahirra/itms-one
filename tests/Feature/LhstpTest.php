@@ -431,7 +431,8 @@ it('generates version specific PDF and DOCX documents that can be downloaded aga
         ->and($xml['word/document.xml'])->toContain('LAPORAN HASIL SERAH TERIMA PEKERJAAN')
         ->toContain('<w:b')
         ->toContain('<w:i')
-        ->toContain('w:bottom');
+        ->toContain('w:bottom')
+        ->toContain('<w:u');
 
     $this->actingAs($this->user)
         ->get(route('documents.download', $pdf))
