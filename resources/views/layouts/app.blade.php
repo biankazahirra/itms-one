@@ -35,6 +35,12 @@
                     RAB
                 </a>
 
+                <a href="{{ route('contracts.index') }}"
+                   @if (request()->routeIs('contracts.*')) aria-current="page" @endif
+                   class="flex items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150 ease-out {{ request()->routeIs('contracts.*') ? 'bg-primary/10 text-primary' : 'text-muted hover:bg-app hover:text-ink' }}">
+                    Kontrak
+                </a>
+
                 <p class="px-3 pt-4 pb-1 text-xs font-semibold uppercase tracking-wide text-muted">Master Data</p>
 
                 <a href="{{ route('master.vendors.index') }}"

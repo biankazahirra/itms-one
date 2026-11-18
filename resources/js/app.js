@@ -225,3 +225,107 @@
         });
     }
 })();
+
+// Contract form: payment method blocks, termin rows, percentage total, nominal preview.
+(() => {
+    const form = document.getElementById('contract-form');
+
+    if (!form) {
+        return;
+    }
+
+    const methodSelect = document.getElementById('payment_method');
+    const blocks = [...form.querySelectorAll('[data-payment-block]')];
+    const valueInput = document.getElementById('contract_value');
+    const body = document.getElementById('termin-body');
+    const template = document.getElementById('termin-row-template');
+    const addButton = document.getElementById('add-termin');
+    const totalEl = document.getElementById('termin-total');
+
+    const formatRupiah = (value) => `Rp ${value.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+    const recalc = () => {
+        if (!body) {
+            return;
+        }
+
+        const contractValue = Number(valueInput?.value || 0);
+        const rows = [...body.querySelectorAll('[data-termin-row]')];
+        let total = 0;
+
+        rows.forEach((row, index) => {
+            row.querySelector('[data-termin-number]').textContent = String(index + 1);
+
+            row.querySelectorAll('[data-termin-field]').forEach((input) => {
+                input.name = `termins[${index}][${input.dataset.terminField}]`;
+            });
+
+            const percentage = Number(row.querySelector('[data-termin-field="percentage"]')?.value || 0);
+            total += percentage;
+
+            const nominal = row.querySelector('[data-termin-nominal]');
+
+            if (nominal) {
+                nominal.textContent = formatRupiah(contractValue * percentage / 100);
+            }
+
+            const removeButton = row.querySelector('[data-remove-termin]');
+
+            if (removeButton) {
+                removeButton.disabled = rows.length === 1;
+                removeButton.classList.toggle('opacity-40', rows.length === 1);
+            }
+        });
+
+        if (totalEl) {
+            totalEl.textContent = total.toLocaleString('id-ID', { maximumFractionDigits: 4 });
+            totalEl.classList.toggle('text-danger', Math.abs(total - 100) > 0.00005);
+        }
+    };
+
+    const toggleBlocks = () => {
+        const method = methodSelect?.value;
+
+        blocks.forEach((block) => {
+            const active = block.dataset.paymentBlock === method;
+
+            block.classList.toggle('hidden', !active);
+            block.querySelectorAll('input, select, textarea').forEach((input) => {
+                input.disabled = !active;
+            });
+        });
+
+        recalc();
+    };
+
+    methodSelect?.addEventListener('change', toggleBlocks);
+
+    addButton?.addEventListener('click', () => {
+        if (!body || !template) {
+            return;
+        }
+
+        body.appendChild(template.content.cloneNode(true));
+        recalc();
+        body.querySelector('[data-termin-row]:last-child input')?.focus();
+    });
+
+    body?.addEventListener('click', (event) => {
+        const button = event.target.closest('[data-remove-termin]');
+
+        if (!button || body.querySelectorAll('[data-termin-row]').length === 1) {
+            return;
+        }
+
+        button.closest('[data-termin-row]').remove();
+        recalc();
+    });
+
+    form.addEventListener('input', (event) => {
+        if (event.target.matches('[data-termin-field="percentage"], #contract_value')) {
+            recalc();
+        }
+    });
+
+    toggleBlocks();
+})();

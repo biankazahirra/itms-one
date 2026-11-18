@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\BudgetController;
+use App\Http\Controllers\ContractController;
 use App\Http\Controllers\GeneratedDocumentController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\Master\DepartmentController;
@@ -48,6 +49,19 @@ Route::middleware('auth')->group(function () {
     Route::post('rab/{budget}/revision', [BudgetController::class, 'revision'])->name('rab.revision');
     Route::post('rab/{budget}/archive', [BudgetController::class, 'archive'])->name('rab.archive');
     Route::post('rab/{budget}/documents', [BudgetController::class, 'generateDocument'])->name('rab.documents.store');
+
+    Route::get('contracts', [ContractController::class, 'index'])->name('contracts.index');
+    Route::get('contracts/create', [ContractController::class, 'create'])->name('contracts.create');
+    Route::post('contracts', [ContractController::class, 'store'])->name('contracts.store');
+    Route::get('contracts/{contract}', [ContractController::class, 'show'])->name('contracts.show');
+    Route::get('contracts/{contract}/edit', [ContractController::class, 'edit'])->name('contracts.edit');
+    Route::put('contracts/{contract}', [ContractController::class, 'update'])->name('contracts.update');
+    Route::delete('contracts/{contract}', [ContractController::class, 'destroy'])->name('contracts.destroy');
+    Route::post('contracts/{contract}/archive', [ContractController::class, 'archive'])->name('contracts.archive');
+    Route::post('contracts/{contract}/unarchive', [ContractController::class, 'unarchive'])->name('contracts.unarchive');
+    Route::post('contracts/{contract}/attachments', [ContractController::class, 'storeAttachments'])->name('contracts.attachments.store');
+    Route::delete('contracts/{contract}/attachments/{attachment}', [ContractController::class, 'destroyAttachment'])->name('contracts.attachments.destroy');
+    Route::get('contracts/{contract}/attachments/{attachment}', [ContractController::class, 'downloadAttachment'])->name('contracts.attachments.download');
 
     Route::get('documents/{document}', GeneratedDocumentController::class)->name('documents.download');
 

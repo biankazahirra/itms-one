@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable(['company_name', 'company_address', 'npwp', 'phone', 'email', 'is_active'])]
 class Vendor extends Model
@@ -18,5 +19,10 @@ class Vendor extends Model
         return [
             'is_active' => 'boolean',
         ];
+    }
+
+    public function contracts(): HasMany
+    {
+        return $this->hasMany(Contract::class);
     }
 }
