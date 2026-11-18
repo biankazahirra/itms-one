@@ -466,7 +466,8 @@ class LhstpDocumentService
         $cell = $row->addCell(Converter::pointToTwip(300));
         $this->tableText($cell, $label, null, $bold);
         $this->tableText($cell, $subLabel ?? '', null);
-        $this->tableText($row->addCell(Converter::pointToTwip(self::TEXT_WIDTH - 300)), '= Rp '.$amount, 'right', $bold);
+        $this->tableText($row->addCell(Converter::pointToTwip(12)), '=', null, $bold);
+        $this->tableText($row->addCell(Converter::pointToTwip(self::TEXT_WIDTH - 312)), 'Rp '.$amount, 'right', $bold);
     }
 
     /**

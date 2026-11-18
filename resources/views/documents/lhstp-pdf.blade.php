@@ -111,6 +111,7 @@
         .payment { margin-top: 12.4pt; font-size: 10pt; }
         .payment table td { line-height: 10.42pt; }
         .payment td.label { width: 300pt; }
+        .payment td.equals { width: 12pt; white-space: nowrap; }
         .payment td.amount { text-align: right; white-space: nowrap; }
         .payment .sub { padding-left: 18.2pt; }
 
@@ -237,23 +238,28 @@
             <table>
                 <tr>
                     <td class="label"><strong>Nilai Kontrak</strong></td>
-                    <td class="amount"><strong>= Rp {{ $contractValue }}</strong></td>
+                    <td class="equals"><strong>=</strong></td>
+                    <td class="amount"><strong>Rp {{ $contractValue }}</strong></td>
                 </tr>
                 <tr>
                     <td class="label"><strong>Pembayaran</strong><br><span class="sub">{{ $workName }}</span></td>
-                    <td class="amount">= Rp {{ $paymentAmount }}</td>
+                    <td class="equals">=</td>
+                    <td class="amount">Rp {{ $paymentAmount }}</td>
                 </tr>
                 <tr>
                     <td class="label">DPP LAIN (Rp {{ $paymentAmount }} x 11/12)</td>
-                    <td class="amount">= Rp {{ $dpp }}</td>
+                    <td class="equals">=</td>
+                    <td class="amount">Rp {{ $dpp }}</td>
                 </tr>
                 <tr>
                     <td class="label">PPN ( Rp {{ $dpp }} x {{ $ppnRate }}%)</td>
-                    <td class="amount">= Rp {{ $ppn }}</td>
+                    <td class="equals">=</td>
+                    <td class="amount">Rp {{ $ppn }}</td>
                 </tr>
                 <tr>
                     <td class="label"><strong>Yang Harus Dibayarkan Termasuk PPN</strong></td>
-                    <td class="amount">= Rp <strong>{{ $total }}</strong></td>
+                    <td class="equals">=</td>
+                    <td class="amount"><strong>Rp {{ $total }}</strong></td>
                 </tr>
             </table>
 
