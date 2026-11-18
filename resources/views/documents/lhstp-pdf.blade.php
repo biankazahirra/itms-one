@@ -133,8 +133,8 @@
 
         .signature-date {
             margin-top: 26.9pt;
-            text-align: right;
-            padding-right: 40pt;
+            text-align: left;
+            padding-left: 293.8pt;
         }
 
         table.signatures { margin-top: 13.4pt; }

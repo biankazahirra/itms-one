@@ -364,7 +364,8 @@ class LhstpDocumentService
         );
 
         $paragraph('Cilegon, '.$data['signatureDate'], [], [
-            'alignment' => 'right',
+            'alignment' => 'left',
+            'indent' => Converter::pointToTwip(293.8),
             'spaceBefore' => Converter::pointToTwip(40.3),
             'spaceAfter' => Converter::pointToTwip(13.4),
         ]);
