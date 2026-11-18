@@ -375,6 +375,14 @@ it('renders LHSTP list, detail, create, and edit pages', function () {
     $this->actingAs($this->user)->get(route('lhstp.edit', $lhstp))->assertOk();
 });
 
+it('offers the selected contract PO as the reference autofill source', function () {
+    $this->actingAs($this->user)
+        ->get(route('lhstp.create', ['contract_id' => $this->contract->id]))
+        ->assertOk()
+        ->assertSee('data-po-number="PO/ITMS/2026/101"', false)
+        ->assertSee('data-po-date="2026-11-01"', false);
+});
+
 it('generates version specific PDF and DOCX documents that can be downloaded again later', function () {
     Storage::fake('local');
 

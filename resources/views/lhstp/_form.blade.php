@@ -129,6 +129,8 @@
         <div class="grid gap-5 sm:grid-cols-2">
             <x-field name="reference_document_type" label="Jenis Dokumen Referensi" required>
                 <select id="reference_document_type" name="reference_document_type" required
+                        data-po-number="{{ $selectedContract?->po_number }}"
+                        data-po-date="{{ $selectedContract?->contract_date?->format('Y-m-d') }}"
                         class="input input-select @error('reference_document_type') input-error @enderror">
                     @foreach ($types as $type)
                         <option value="{{ $type }}" @selected($referenceType === $type)>{{ $type }}</option>
@@ -240,6 +242,22 @@
             opnameDate.value = lhstpDate.value;
             signatureDate.value = lhstpDate.value;
         });
+
+        var referenceType = document.getElementById('reference_document_type');
+        var referenceNumber = document.getElementById('reference_document_number');
+        var referenceDate = document.getElementById('reference_document_date');
+
+        if (referenceType && referenceNumber && referenceDate) {
+            // Surat Purchase Order memakai nomor dan tanggal kontrak terpilih.
+            referenceType.addEventListener('change', function () {
+                if (referenceType.value !== @json(\App\Models\Lhstp::REFERENCE_PURCHASE_ORDER)) {
+                    return;
+                }
+
+                referenceNumber.value = referenceType.dataset.poNumber || '';
+                referenceDate.value = referenceType.dataset.poDate || '';
+            });
+        }
     })();
 </script>
 
