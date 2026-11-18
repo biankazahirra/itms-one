@@ -221,6 +221,28 @@
     </div>
 </form>
 
+<script>
+    (function () {
+        var lhstpDate = document.getElementById('lhstp_date');
+        var opnameDate = document.getElementById('opname_date');
+        var signatureDate = document.getElementById('signature_date');
+
+        if (!lhstpDate || !opnameDate || !signatureDate) {
+            return;
+        }
+
+        // Tanggal opname dan tanda tangan mengikuti tanggal LHSTP.
+        lhstpDate.addEventListener('change', function () {
+            if (!lhstpDate.value) {
+                return;
+            }
+
+            opnameDate.value = lhstpDate.value;
+            signatureDate.value = lhstpDate.value;
+        });
+    })();
+</script>
+
 @if ($version === null && ! $lhstp->exists)
     <script>
         (function () {
