@@ -4,6 +4,7 @@ use App\Models\ActivityLog;
 use App\Models\Contract;
 use App\Models\GeneratedDocument;
 use App\Models\Lhstp;
+use App\Models\LhstpVersion;
 use App\Models\LhstpVersionTermin;
 use App\Models\RecycleBinItem;
 use App\Models\User;
@@ -450,6 +451,20 @@ it('generates version specific PDF and DOCX documents that can be downloaded aga
 it('calculates realization days inclusively', function () {
     expect(app(LhstpService::class)->realizationDays('2026-11-01', '2026-11-05'))->toBe(5)
         ->and(app(LhstpService::class)->realizationDays('2026-11-01', '2026-11-01'))->toBe(1);
+});
+
+it('rounds contract months up when the end date is within three days', function () {
+    $months = fn (string $end): int => (new LhstpVersion([
+        'contract_start_snapshot' => '2026-06-01',
+        'contract_end_snapshot' => $end,
+    ]))->contractMonths();
+
+    expect($months('2026-10-31'))->toBe(5)
+        ->and($months('2026-10-30'))->toBe(5)
+        ->and($months('2026-10-29'))->toBe(5)
+        ->and($months('2026-10-28'))->toBe(4)
+        ->and($months('2026-10-01'))->toBe(4)
+        ->and($months('2026-11-01'))->toBe(5);
 });
 
 it('formats the opname date with its Indonesian weekday', function () {

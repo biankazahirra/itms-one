@@ -108,9 +108,20 @@ class LhstpVersion extends Model
 
     /**
      * Contract duration in whole months used by the printed sentence.
+     *
+     * An end date within three days of the next whole month is rounded up,
+     * e.g. 1 June to 31 October counts as five months.
      */
     public function contractMonths(): int
     {
-        return (int) $this->contract_start_snapshot->diffInMonths($this->contract_end_snapshot);
+        $start = $this->contract_start_snapshot;
+        $end = $this->contract_end_snapshot;
+
+        $months = (int) $start->diffInMonths($end);
+        $daysToNextMonth = $end->diffInDays($start->copy()->addMonths($months + 1));
+
+        return $daysToNextMonth >= 1 && $daysToNextMonth <= 3
+            ? $months + 1
+            : $months;
     }
 }
