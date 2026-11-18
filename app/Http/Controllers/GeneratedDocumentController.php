@@ -16,6 +16,7 @@ class GeneratedDocumentController extends Controller
         abort_unless(in_array($document->entity_type, [
             GeneratedDocument::ENTITY_PURCHASE_REQUEST,
             GeneratedDocument::ENTITY_BUDGET,
+            GeneratedDocument::ENTITY_LHSTP,
         ], true), 404);
 
         return $files->download($document->storage_path, $document->original_filename);

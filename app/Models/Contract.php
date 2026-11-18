@@ -92,6 +92,11 @@ class Contract extends Model
         return $this->hasMany(ContractActivityLog::class)->latest('created_at');
     }
 
+    public function lhstps(): HasMany
+    {
+        return $this->hasMany(Lhstp::class);
+    }
+
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
@@ -136,12 +141,13 @@ class Contract extends Model
     }
 
     /**
-     * Keep purged contracts from orphaning stored attachments or the
-     * contract change history.
+     * Keep purged contracts from orphaning stored attachments, the contract
+     * change history, or its LHSTP records.
      */
     public function canBePurged(): bool
     {
         return ! $this->attachments()->exists()
-            && ! $this->activityLogs()->exists();
+            && ! $this->activityLogs()->exists()
+            && ! $this->lhstps()->exists();
     }
 }

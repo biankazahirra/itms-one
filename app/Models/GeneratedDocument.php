@@ -26,7 +26,11 @@ class GeneratedDocument extends Model
 
     public const ENTITY_BUDGET = 'budget';
 
+    public const ENTITY_LHSTP = 'lhstp';
+
     public const FORMAT_PDF = 'PDF';
+
+    public const FORMAT_DOCX = 'DOCX';
 
     /**
      * Documents are append-only and have no updated_at column.

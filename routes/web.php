@@ -3,6 +3,7 @@
 use App\Http\Controllers\BudgetController;
 use App\Http\Controllers\ContractController;
 use App\Http\Controllers\GeneratedDocumentController;
+use App\Http\Controllers\LhstpController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\Master\DepartmentController;
 use App\Http\Controllers\Master\UnitController;
@@ -64,6 +65,18 @@ Route::middleware('auth')->group(function () {
     Route::get('contracts/{contract}/attachments/{attachment}', [ContractController::class, 'downloadAttachment'])->name('contracts.attachments.download');
 
     Route::get('documents/{document}', GeneratedDocumentController::class)->name('documents.download');
+
+    Route::get('lhstp', [LhstpController::class, 'index'])->name('lhstp.index');
+    Route::get('lhstp/create', [LhstpController::class, 'create'])->name('lhstp.create');
+    Route::post('lhstp', [LhstpController::class, 'store'])->name('lhstp.store');
+    Route::get('lhstp/{lhstp}', [LhstpController::class, 'show'])->name('lhstp.show');
+    Route::get('lhstp/{lhstp}/edit', [LhstpController::class, 'edit'])->name('lhstp.edit');
+    Route::put('lhstp/{lhstp}', [LhstpController::class, 'update'])->name('lhstp.update');
+    Route::delete('lhstp/{lhstp}', [LhstpController::class, 'destroy'])->name('lhstp.destroy');
+    Route::post('lhstp/{lhstp}/finalize', [LhstpController::class, 'finalize'])->name('lhstp.finalize');
+    Route::post('lhstp/{lhstp}/revise', [LhstpController::class, 'revise'])->name('lhstp.revise');
+    Route::post('lhstp/{lhstp}/archive', [LhstpController::class, 'archive'])->name('lhstp.archive');
+    Route::post('lhstp/{lhstp}/documents', [LhstpController::class, 'generateDocument'])->name('lhstp.documents.store');
 
     Route::get('/files/{path}', PrivateFileController::class)
         ->where('path', '.*')

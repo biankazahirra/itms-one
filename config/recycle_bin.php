@@ -2,6 +2,7 @@
 
 use App\Models\Budget;
 use App\Models\Contract;
+use App\Models\Lhstp;
 use App\Models\PurchaseRequest;
 
 return [
@@ -21,6 +22,7 @@ return [
         'purchase_request' => PurchaseRequest::class,
         'budget' => Budget::class,
         'contract' => Contract::class,
+        'lhstp' => Lhstp::class,
     ],
 
 ];

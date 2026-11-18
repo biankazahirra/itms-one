@@ -14,9 +14,18 @@ final class Format
      */
     public static function rupiah(string|int|float|null $amount, int $decimals = 0): string
     {
+        return 'Rp '.self::angka($amount, $decimals);
+    }
+
+    /**
+     * Format a stored decimal value as a grouped number without the currency
+     * prefix, for printed documents that already contain "Rp".
+     */
+    public static function angka(string|int|float|null $amount, int $decimals = 0): string
+    {
         $value = is_numeric($amount) ? (float) $amount : 0.0;
 
-        return 'Rp '.number_format($value, $decimals, ',', '.');
+        return number_format($value, $decimals, ',', '.');
     }
 
     /**

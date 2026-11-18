@@ -41,6 +41,12 @@
                     Kontrak
                 </a>
 
+                <a href="{{ route('lhstp.index') }}"
+                   @if (request()->routeIs('lhstp.*')) aria-current="page" @endif
+                   class="flex items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150 ease-out {{ request()->routeIs('lhstp.*') ? 'bg-primary/10 text-primary' : 'text-muted hover:bg-app hover:text-ink' }}">
+                    LHSTP
+                </a>
+
                 <p class="px-3 pt-4 pb-1 text-xs font-semibold uppercase tracking-wide text-muted">Master Data</p>
 
                 <a href="{{ route('master.vendors.index') }}"
