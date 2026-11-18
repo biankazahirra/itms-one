@@ -14,6 +14,7 @@ use PhpOffice\PhpWord\Element\Cell;
 use PhpOffice\PhpWord\Element\Table;
 use PhpOffice\PhpWord\IOFactory;
 use PhpOffice\PhpWord\PhpWord;
+use PhpOffice\PhpWord\Settings;
 use PhpOffice\PhpWord\Shared\Converter;
 use RuntimeException;
 
@@ -181,6 +182,9 @@ class LhstpDocumentService
      */
     private function renderDocx(array $data): string
     {
+        // Word rejects documents containing unescaped characters such as "&".
+        Settings::setOutputEscapingEnabled(true);
+
         $phpWord = new PhpWord;
         $phpWord->setDefaultFontName('Calibri');
         $phpWord->setDefaultFontSize(11);

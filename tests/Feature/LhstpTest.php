@@ -430,8 +430,17 @@ it('generates version specific PDF and DOCX documents that can be downloaded aga
         return $entries;
     })();
 
+    $dom = new DOMDocument;
+    libxml_use_internal_errors(true);
+    $validXml = $dom->loadXML($xml['word/document.xml']);
+    $xmlErrors = libxml_get_errors();
+    libxml_clear_errors();
+
     expect($xml)->toHaveKey('word/document.xml')
+        ->and($validXml)->toBeTrue()
+        ->and($xmlErrors)->toBe([])
         ->and($xml['word/document.xml'])->toContain('LAPORAN HASIL SERAH TERIMA PEKERJAAN')
+        ->toContain('IT &amp; Management System Manager')
         ->toContain('<w:b')
         ->toContain('<w:i')
         ->toContain('w:bottom')
