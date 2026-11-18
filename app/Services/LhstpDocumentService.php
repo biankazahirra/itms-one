@@ -311,11 +311,11 @@ class LhstpDocumentService
         $this->paymentRow($payments, 'Nilai Kontrak', $data['contractValue'], null, true);
         $this->paymentRow($payments, 'Pembayaran', $data['paymentAmount'], $data['workName']);
         $this->paymentRow($payments, 'DPP LAIN (Rp '.$data['paymentAmount'].' x 11/12)', $data['dpp']);
-        $this->paymentRow($payments, 'PPN ( Rp '.$data['dpp'].' x '.$data['ppnRate'].'%)', $data['ppn']);
+        $this->paymentRow($payments, 'PPN (Rp '.$data['dpp'].' x '.$data['ppnRate'].'%)', $data['ppn']);
         $this->paymentRow($payments, 'Yang Harus Dibayarkan Termasuk PPN', $data['total'], null, true);
 
         $this->richText($section, [
-            ['text' => 'Terbilang: ( '.$data['terbilang'].' )', 'italic' => true],
+            ['text' => 'Terbilang: ('.$data['terbilang'].')', 'italic' => true],
         ], ['size' => 10], ['spaceBefore' => Converter::pointToTwip(11)]);
         $this->richText($section, [
             ['text' => '(Harga tersebut sudah termasuk PPN '.$data['ppnRate'].'%)', 'italic' => true],

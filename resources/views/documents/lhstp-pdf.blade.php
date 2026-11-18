@@ -252,7 +252,7 @@
                     <td class="amount">Rp {{ $dpp }}</td>
                 </tr>
                 <tr>
-                    <td class="label">PPN ( Rp {{ $dpp }} x {{ $ppnRate }}%)</td>
+                    <td class="label">PPN (Rp {{ $dpp }} x {{ $ppnRate }}%)</td>
                     <td class="equals">=</td>
                     <td class="amount">Rp {{ $ppn }}</td>
                 </tr>
@@ -264,7 +264,7 @@
             </table>
 
             <p class="terbilang">
-                <em>Terbilang: ( {{ $terbilang }} )</em><br>
+                <em>Terbilang: ({{ $terbilang }})</em><br>
                 <span class="ppn-note"><em>(Harga tersebut sudah termasuk PPN {{ $ppnRate }}%)</em></span>
             </p>
         </div>

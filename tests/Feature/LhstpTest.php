@@ -436,7 +436,8 @@ it('generates version specific PDF and DOCX documents that can be downloaded aga
         ->toContain('<w:i')
         ->toContain('w:bottom')
         ->toContain('<w:u')
-        ->toContain('Selasa, 17 November 2026');
+        ->toContain('Selasa, 17 November 2026')
+        ->toContain('Terbilang: (Tiga Belas Juta Tiga Ratus Dua Puluh Ribu Rupiah)');
 
     $this->actingAs($this->user)
         ->get(route('documents.download', $pdf))
