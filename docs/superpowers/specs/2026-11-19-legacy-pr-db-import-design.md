@@ -1,7 +1,7 @@
 # Legacy PR Database Import — Design
 
 Date: 2026-11-19
-Status: Draft, awaiting approval
+Status: Final, awaiting approval to plan and implement
 
 ## Intent
 
@@ -117,13 +117,13 @@ Implementation shape:
 - Test that source data outside the mapping (unit, spec, GL) never reaches new fields.
 - Full suite and Pint must pass before any real import.
 
-## Decisions still needed before implementation
+## Decisions settled 2026-11-19
 
-1. **Duplicate PO `3550002557`:** import only contract ID 1, only ID 2, or neither? Their LHSTPs point to ID 2.
-2. **Incomplete LHSTPs:** skip all rows that lack required new fields, or supply the missing conclusion/payment terms/dates?
-3. **PR numbering:** confirm that new sequential `PR-000xxx` numbers are acceptable, with old `id_pr` kept only in the report.
-4. **Empty-price/quantity items:** skip those items, or should the whole affected PR be skipped?
+1. **Duplicate PO `3550002557`:** import contract ID 2 only; ID 1 is listed as a duplicate in the report. Its related LHSTPs keep pointing to ID 2.
+2. **Incomplete LHSTPs:** skip every row missing a valid number/date or required new field; list each with its reason.
+3. **PR numbering:** allocate new sequential `PR-000001…` numbers ordered by `tanggal`, then `id_pr`; keep `id_pr` only in the report.
+4. **Invalid items:** skip only the invalid item. Keep the PR if at least one valid item remains; otherwise skip the PR.
 
 ## Builder check
 
-No fresh reviewer subagent available in this session; a self-review of this document was used. Sensible defaults are marked above as my calls: department consolidation, vendor merge, category mapping, service-based import, dry-run default, and report-only mapping. The four items listed under "Decisions still needed" change what gets built and need your answer.
+No fresh reviewer subagent available in this session; a self-review of this document was used. Settled as my calls: department consolidation, vendor merge, category mapping, service-based import, dry-run default, and report-only mapping. The four conflict rules above were answered by the user on 2026-11-19.
