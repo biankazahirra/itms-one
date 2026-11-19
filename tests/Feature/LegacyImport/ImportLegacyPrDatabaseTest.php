@@ -50,6 +50,18 @@ it('applies mapped rows through application services', function () {
         ->and(PurchaseRequest::first()->status)->toBe(PurchaseRequest::STATUS_DRAFT);
 });
 
+it('refuses to apply without backup confirmation', function () {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->artisan('data:import-legacy-pr-db', [
+            '--file' => fixturePath(), '--apply' => true, '--user' => $user->id,
+        ])
+        ->assertFailed();
+
+    expect(PurchaseRequest::count())->toBe(0);
+});
+
 it('is idempotent', function () {
     Storage::fake('local');
     $user = User::factory()->create();
