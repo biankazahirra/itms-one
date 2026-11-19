@@ -323,7 +323,7 @@ class LhstpDocumentService
             ['text' => 'Pembayaran yang berhak diterima '],
             ['text' => $data['vendorName'], 'bold' => true],
             ['text' => ' adalah sebagai berikut:'],
-        ], ['size' => 10], ['spaceBefore' => Converter::pointToTwip(12.4)]);
+        ], ['size' => 10], ['alignment' => 'both', 'spaceBefore' => Converter::pointToTwip(12.4)]);
 
         $payments = $section->addTable();
         $this->paymentRow($payments, 'Nilai Kontrak', $data['contractValue'], null, true);
@@ -334,15 +334,15 @@ class LhstpDocumentService
 
         $this->richText($section, [
             ['text' => 'Terbilang: ('.$data['terbilang'].')', 'italic' => true],
-        ], ['size' => 10], ['spaceBefore' => Converter::pointToTwip(11)]);
+        ], ['size' => 10], ['alignment' => 'both', 'spaceBefore' => Converter::pointToTwip(11)]);
         $this->richText($section, [
             ['text' => '(Harga tersebut sudah termasuk PPN '.$data['ppnRate'].'%)', 'italic' => true],
-        ], ['size' => 10], ['indentation' => ['left' => Converter::pointToTwip(42.6)]]);
+        ], ['size' => 10], ['alignment' => 'both', 'indentation' => ['left' => Converter::pointToTwip(42.6)]]);
 
         $paragraph(
             'Dari tanggal diterbitkannya LHSTP ini, Pembayaran dibebankan kepada Cost Center Nomor : '.$data['costCenter'],
             ['size' => 11],
-            ['spaceBefore' => Converter::pointToTwip(53.8)],
+            ['alignment' => 'both', 'spaceBefore' => Converter::pointToTwip(53.8)],
         );
 
         $section->addPageBreak();
@@ -477,9 +477,9 @@ class LhstpDocumentService
         $cell = $row->addCell(Converter::pointToTwip(self::TEXT_WIDTH - 21.3));
 
         if (is_array($text)) {
-            $this->richText($cell, $text, ['size' => 11]);
+            $this->richText($cell, $text, ['size' => 11], ['alignment' => 'both']);
         } else {
-            $this->tableText($cell, $text);
+            $this->tableText($cell, $text, 'both');
         }
     }
 
