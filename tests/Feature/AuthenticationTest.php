@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\User;
+use Illuminate\Support\Facades\Log;
 
 it('redirects guests to the login page', function () {
     $this->get('/')->assertRedirect('/login');
@@ -86,4 +87,45 @@ it('logs the user out', function () {
         ->assertRedirect(route('login'));
 
     $this->assertGuest();
+});
+
+it('throttles repeated failed logins', function () {
+    User::factory()->create([
+        'username' => 'admin',
+        'password' => 'secret-password',
+    ]);
+
+    $payload = [
+        'username' => 'admin',
+        'password' => 'wrong-password',
+    ];
+
+    foreach (range(1, 6) as $attempt) {
+        $this->from('/login')
+            ->post('/login', $payload)
+            ->assertSessionHasErrors('username');
+    }
+
+    $this->from('/login')
+        ->post('/login', $payload)
+        ->assertStatus(429);
+});
+
+it('logs failed login attempts', function () {
+    Log::spy();
+
+    User::factory()->create([
+        'username' => 'admin',
+        'password' => 'secret-password',
+    ]);
+
+    $this->from('/login')
+        ->post('/login', [
+            'username' => 'admin',
+            'password' => 'wrong-password',
+        ]);
+
+    Log::shouldHaveReceived('warning')
+        ->once()
+        ->withArgs(fn ($message) => str_contains($message, 'Gagal masuk'));
 });
