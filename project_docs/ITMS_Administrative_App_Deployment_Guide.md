@@ -144,7 +144,7 @@ Recovery steps, in order:
 2. Restore the database from the chosen timestamp folder:
 
 ```powershell
-C:\mysql84\bin\mysql.exe --host=127.0.0.1 --port=3307 --user=<db-user> --password itms_admin_db -e "SOURCE C:\ITMS-Backup\<timestamp>\database.sql"
+C:\mysql84\bin\mysql.exe --host=127.0.0.1 --port=3307 --user=<db-user> --password itms_admin_db -e "SOURCE C:/ITMS-Backup/<timestamp>/database.sql"
 ```
 
 3. Restore private files: extract `private-files.zip` into `<project>\storage\app`, replacing existing files.

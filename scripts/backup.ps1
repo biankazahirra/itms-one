@@ -19,7 +19,9 @@ $target = Join-Path $Destination $stamp
 function Read-EnvValue([string]$name) {
     $line = Select-String -Path (Join-Path $root ".env") -Pattern "^$name=(.*)$" | Select-Object -First 1
     if ($null -eq $line) { throw "Missing $name in .env" }
-    return $line.Matches[0].Groups[1].Value
+    $value = $line.Matches[0].Groups[1].Value.Trim()
+    if ($value -match '^(["''])(.*)\1$') { $value = $Matches[2] }
+    return $value
 }
 
 New-Item -ItemType Directory -Force -Path $target | Out-Null
