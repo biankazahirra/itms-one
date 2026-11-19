@@ -435,10 +435,16 @@ it('generates version specific PDF and DOCX documents that can be downloaded aga
     $validXml = $dom->loadXML($xml['word/document.xml']);
     $xmlErrors = libxml_get_errors();
     libxml_clear_errors();
+    $validHeader = $dom->loadXML($xml['word/header1.xml']);
+    $headerErrors = libxml_get_errors();
+    libxml_clear_errors();
 
     expect($xml)->toHaveKey('word/document.xml')
         ->and($validXml)->toBeTrue()
         ->and($xmlErrors)->toBe([])
+        ->and($validHeader)->toBeTrue()
+        ->and($headerErrors)->toBe([])
+        ->and($xml['word/header1.xml'])->toContain('v:imagedata')
         ->and($xml['word/document.xml'])->toContain('LAPORAN HASIL SERAH TERIMA PEKERJAAN')
         ->toContain('IT &amp; Management System Manager')
         ->toContain('<w:b')
@@ -447,6 +453,13 @@ it('generates version specific PDF and DOCX documents that can be downloaded aga
         ->toContain('<w:u')
         ->toContain('Selasa, 17 November 2026')
         ->toContain('Terbilang: (Tiga Belas Juta Tiga Ratus Dua Puluh Ribu Rupiah)');
+
+    // Reference template uses single line spacing throughout.
+    expect($xml['word/document.xml'])->toContain('w:line="240"')
+        ->not->toContain('w:line="292.8"');
+
+    // Signature columns must mirror the template: PIHAK KEDUA on the left.
+    expect($xml['word/document.xml'])->toMatch('/PIHAK KEDUA<\/w:t>.*?PIHAK PERTAMA<\/w:t>/s');
 
     $this->actingAs($this->user)
         ->get(route('documents.download', $pdf))

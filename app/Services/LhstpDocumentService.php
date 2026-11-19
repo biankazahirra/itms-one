@@ -191,24 +191,36 @@ class LhstpDocumentService
 
         $section = $phpWord->addSection([
             'paperSize' => 'A4',
-            'marginTop' => Converter::pointToTwip(28.95),
+            'marginTop' => Converter::pointToTwip(87.8),
             'marginBottom' => Converter::pointToTwip(40),
             'marginLeft' => Converter::pointToTwip(72),
             'marginRight' => Converter::pointToTwip(48),
+            'headerHeight' => Converter::pointToTwip(28.95),
         ]);
 
         $logo = resource_path('assets/lhstp-logo.png');
         $logoOptions = [
-            'width' => Converter::pointToPixel(502.5),
-            'height' => Converter::pointToPixel(45.4),
+            'width' => 502.5,
+            'height' => 45.4,
+            'unit' => 'pt',
         ];
 
-        $section->addImage($logo, $logoOptions + ['indent' => Converter::pointToTwip(-18)]);
+        // The letterhead sits behind the text and repeats on both pages.
+        $section->addHeader()->addImage($logo, $logoOptions + [
+            'positioning' => 'absolute',
+            'posHorizontal' => 'absolute',
+            'posHorizontalRel' => 'page',
+            'posVertical' => 'absolute',
+            'posVerticalRel' => 'page',
+            'marginLeft' => 54,
+            'marginTop' => 28.95,
+            'wrappingStyle' => 'behind',
+        ]);
 
         $paragraph = fn (string $text, array $font = [], array $style = []) => $section->addText(
             $text,
             ['name' => 'Calibri', 'size' => 11] + $font,
-            ['lineHeight' => 1.22, 'spaceAfter' => 0] + $style,
+            ['lineHeight' => 1.0, 'spaceAfter' => 0] + $style,
         );
 
         $section->addText('LAPORAN HASIL SERAH TERIMA PEKERJAAN', [
@@ -217,7 +229,7 @@ class LhstpDocumentService
             'underline' => 'single',
         ], [
             'alignment' => 'center',
-            'spaceBefore' => Converter::pointToTwip(6),
+            'spaceAfter' => 0,
         ]);
         $this->richText($section, [
             ['text' => 'Nomor: '.$data['number'], 'bold' => true],
@@ -226,6 +238,8 @@ class LhstpDocumentService
         $this->richText($section, [['text' => 'Kepada Yth.', 'bold' => true]], ['size' => 11], ['spaceBefore' => Converter::pointToTwip(14)]);
         $this->richText($section, [['text' => 'Manager Accounting', 'bold' => true]], ['size' => 11]);
         $this->richText($section, [['text' => 'PT Krakatau Sarana Properti', 'bold' => true]], ['size' => 11], ['spaceAfter' => Converter::pointToTwip(13.5)]);
+
+        $section->addText('', [], ['spaceAfter' => 0]);
 
         $fields = $section->addTable();
         foreach ([
@@ -255,7 +269,7 @@ class LhstpDocumentService
             ['text' => ' Perihal Penyelesaian Pekerjaan periode '],
             ['text' => $data['workPeriod'], 'bold' => true],
             ['text' => ' (terlampir), pihak-pihak yang bertanda tangan di bawah ini melaporkan bahwa:'],
-        ], ['size' => 11], ['alignment' => 'both', 'spaceBefore' => Converter::pointToTwip(28.4)]);
+        ], ['size' => 11], ['alignment' => 'both', 'spaceBefore' => Converter::pointToTwip(14.2)]);
 
         $paragraph(
             'Pada hari '.$data['opnameDate'].' telah dilaksanakan penelitian/opname pekerjaan bersama'
@@ -323,7 +337,7 @@ class LhstpDocumentService
         ], ['size' => 10], ['spaceBefore' => Converter::pointToTwip(11)]);
         $this->richText($section, [
             ['text' => '(Harga tersebut sudah termasuk PPN '.$data['ppnRate'].'%)', 'italic' => true],
-        ], ['size' => 10], ['indent' => Converter::pointToTwip(42.6)]);
+        ], ['size' => 10], ['indentation' => ['left' => Converter::pointToTwip(42.6)]]);
 
         $paragraph(
             'Dari tanggal diterbitkannya LHSTP ini, Pembayaran dibebankan kepada Cost Center Nomor : '.$data['costCenter'],
@@ -332,13 +346,16 @@ class LhstpDocumentService
         );
 
         $section->addPageBreak();
-        $section->addImage($logo, $logoOptions + ['indent' => Converter::pointToTwip(-18)]);
+
+        $paragraph('');
 
         $paragraph(
             'Berdasarkan perincian pekerjaan dan perhitungan pembayaran di atas, maka yang bertanda tangan di bawah ini:',
             [],
-            ['alignment' => 'both', 'spaceBefore' => Converter::pointToTwip(18)],
+            ['alignment' => 'both', 'spaceBefore' => Converter::pointToTwip(12)],
         );
+
+        $paragraph('');
 
         $first = $section->addTable();
         $this->partyRows($first, '1', 'Tb. Benny Kurniawan', [
@@ -350,6 +367,8 @@ class LhstpDocumentService
             ['text' => 'PIHAK PERTAMA', 'bold' => true],
         ]);
 
+        $paragraph('');
+
         $second = $section->addTable();
         $this->partyRows($second, '2', $data['representativeName'], [
             ['text' => $data['representativePosition'].' '],
@@ -358,7 +377,7 @@ class LhstpDocumentService
             ['text' => $data['vendorName'], 'bold' => true],
             ['text' => ' yang selanjutnya disebut '],
             ['text' => 'PIHAK KEDUA', 'bold' => true],
-        ], true);
+        ]);
 
         $paragraph(
             'Demikian Laporan Hasil Serah Terima Pekerjaan ini dibuat dengan sebenarnya untuk dapat'
@@ -369,28 +388,24 @@ class LhstpDocumentService
 
         $paragraph('Cilegon, '.$data['signatureDate'], [], [
             'alignment' => 'left',
-            'indent' => Converter::pointToTwip(293.8),
-            'spaceBefore' => Converter::pointToTwip(40.3),
+            'indentation' => ['left' => Converter::pointToTwip(293.8)],
+            'spaceBefore' => Converter::pointToTwip(20.8),
             'spaceAfter' => Converter::pointToTwip(13.4),
         ]);
 
         $signatures = $section->addTable();
-        foreach ([
-            ['PIHAK KEDUA', $data['vendorName']],
-            ['PIHAK PERTAMA', 'PT Krakatau Sarana Properti'],
-        ] as [$party, $company]) {
+        $signatureRow = function (string $left, string $right, bool $underline = false) use ($signatures): void {
             $row = $signatures->addRow();
-            $this->tableText($row->addCell(Converter::pointToTwip(self::TEXT_WIDTH / 2)), $party, 'center');
-            $this->tableText($row->addCell(Converter::pointToTwip(self::TEXT_WIDTH / 2)), $company, 'center');
-        }
-        $signatures->addRow(Converter::pointToTwip(53.8));
-        $row = $signatures->addRow();
-        $this->tableText($row->addCell(Converter::pointToTwip(self::TEXT_WIDTH / 2)), $data['representativeName'], 'center', false, [], true);
-        $this->tableText($row->addCell(Converter::pointToTwip(self::TEXT_WIDTH / 2)), 'Tb. Benny Kurniawan', 'center', false, [], true);
+            $this->tableText($row->addCell(Converter::pointToTwip(self::TEXT_WIDTH / 2)), $left, 'center', false, [], $underline);
+            $this->tableText($row->addCell(Converter::pointToTwip(self::TEXT_WIDTH / 2)), $right, 'center', false, [], $underline);
+        };
 
-        $row = $signatures->addRow();
-        $this->tableText($row->addCell(Converter::pointToTwip(self::TEXT_WIDTH / 2)), $data['representativePosition'], 'center');
-        $this->tableText($row->addCell(Converter::pointToTwip(self::TEXT_WIDTH / 2)), 'IT & Management System Manager', 'center');
+        $signatureRow('', '');
+        $signatureRow('PIHAK KEDUA', 'PIHAK PERTAMA');
+        $signatureRow($data['vendorName'], 'PT Krakatau Sarana Properti');
+        $signatures->addRow(Converter::pointToTwip(53.8));
+        $signatureRow($data['representativeName'], 'Tb. Benny Kurniawan', true);
+        $signatureRow($data['representativePosition'], 'IT & Management System Manager');
 
         $temporary = tempnam(sys_get_temp_dir(), 'lhstp-docx-');
 
@@ -420,13 +435,14 @@ class LhstpDocumentService
         bool $bold = false,
         array $style = [],
         bool $underline = false,
+        int $size = 11,
     ): void {
-        $font = ['name' => 'Calibri', 'size' => 11]
+        $font = ['name' => 'Calibri', 'size' => $size]
             + ($bold ? ['bold' => true] : [])
             + ($underline ? ['underline' => 'single'] : []);
 
         $cell->addText($text, $font, [
-            'lineHeight' => 1.22,
+            'lineHeight' => 1.0,
             'spaceAfter' => 0,
         ] + ($alignment === null ? [] : ['alignment' => $alignment]) + $style);
     }
@@ -440,7 +456,7 @@ class LhstpDocumentService
      */
     private function richText($container, array $segments, array $font, array $style = []): void
     {
-        $run = $container->addTextRun(['lineHeight' => 1.22, 'spaceAfter' => 0] + $style);
+        $run = $container->addTextRun(['lineHeight' => 1.0, 'spaceAfter' => 0] + $style);
 
         foreach ($segments as $segment) {
             $run->addText($segment['text'], ['name' => 'Calibri'] + $font + array_filter([
@@ -474,19 +490,23 @@ class LhstpDocumentService
     {
         $row = $table->addRow();
         $cell = $row->addCell(Converter::pointToTwip(300));
-        $this->tableText($cell, $label, null, $bold);
-        $this->tableText($cell, $subLabel ?? '', null);
-        $this->tableText($row->addCell(Converter::pointToTwip(12)), '=', null, $bold);
-        $this->tableText($row->addCell(Converter::pointToTwip(self::TEXT_WIDTH - 312)), 'Rp '.$amount, 'right', $bold);
+        $this->tableText($cell, $label, null, $bold, [], false, 10);
+
+        if ($subLabel !== null) {
+            $this->tableText($cell, $subLabel, null, false, ['indentation' => ['left' => Converter::pointToTwip(18.2)]], false, 10);
+        }
+
+        $this->tableText($row->addCell(Converter::pointToTwip(12)), '=', null, $bold, [], false, 10);
+        $this->tableText($row->addCell(Converter::pointToTwip(self::TEXT_WIDTH - 312)), 'Rp '.$amount, 'right', $bold, [], false, 10);
     }
 
     /**
      * @param  Table  $table
      * @param  string|array<int, array{text: string, bold?: bool, italic?: bool}>  $position
      */
-    private function partyRows($table, string $number, string $name, string|array $position, bool $spaced = false): void
+    private function partyRows($table, string $number, string $name, string|array $position): void
     {
-        $row = $table->addRow(Converter::pointToTwip($spaced ? 34 : 0));
+        $row = $table->addRow();
         $this->tableText($row->addCell(Converter::pointToTwip(13.5)), $number);
         $this->tableText($row->addCell(Converter::pointToTwip(46.7)), 'Nama');
         $this->tableText($row->addCell(Converter::pointToTwip(13)), ':');
