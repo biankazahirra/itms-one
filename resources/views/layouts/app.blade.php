@@ -66,6 +66,20 @@
                    class="flex items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150 ease-out {{ request()->routeIs('master.departments.*') ? 'bg-primary/10 text-primary' : 'text-muted hover:bg-app hover:text-ink' }}">
                     Departemen
                 </a>
+
+                <p class="px-3 pt-4 pb-1 text-xs font-semibold uppercase tracking-wide text-muted">Lainnya</p>
+
+                <a href="{{ route('recycle-bin.index') }}"
+                   @if (request()->routeIs('recycle-bin.*')) aria-current="page" @endif
+                   class="flex items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150 ease-out {{ request()->routeIs('recycle-bin.*') ? 'bg-primary/10 text-primary' : 'text-muted hover:bg-app hover:text-ink' }}">
+                    Recycle Bin
+                </a>
+
+                <a href="{{ route('activity.index') }}"
+                   @if (request()->routeIs('activity.*')) aria-current="page" @endif
+                   class="flex items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150 ease-out {{ request()->routeIs('activity.*') ? 'bg-primary/10 text-primary' : 'text-muted hover:bg-app hover:text-ink' }}">
+                    Riwayat Aktivitas
+                </a>
             </nav>
         </aside>
 

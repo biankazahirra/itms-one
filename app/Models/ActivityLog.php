@@ -9,6 +9,39 @@ use Illuminate\Database\Eloquent\Model;
 class ActivityLog extends Model
 {
     /**
+     * Indonesian labels for the modules used in activity entries.
+     *
+     * @var array<string, string>
+     */
+    public const ENTITY_LABELS = [
+        'purchase_request' => 'Purchase Requisition',
+        'budget' => 'RAB',
+        'contract' => 'Kontrak',
+        'lhstp' => 'LHSTP',
+    ];
+
+    /**
+     * Indonesian labels for the recorded action codes.
+     *
+     * @var array<string, string>
+     */
+    public const ACTION_LABELS = [
+        'created' => 'Dibuat',
+        'updated' => 'Diperbarui',
+        'finalized' => 'Difinalisasi',
+        'revised' => 'Direvisi',
+        'revision_created' => 'Revisi dibuat',
+        'archived' => 'Diarsipkan',
+        'unarchived' => 'Batal diarsipkan',
+        'deleted' => 'Dipindahkan ke Recycle Bin',
+        'restored' => 'Dipulihkan',
+        'document_generated' => 'Dokumen dibuat',
+        'attachment_added' => 'Lampiran ditambahkan',
+        'attachment_removed' => 'Lampiran dihapus',
+        'purge_blocked' => 'Penghapusan permanen diblokir',
+    ];
+
+    /**
      * Activity logs are append-only and have no updated_at column.
      *
      * @var bool

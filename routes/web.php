@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ActivityLogController;
 use App\Http\Controllers\BudgetController;
 use App\Http\Controllers\ContractController;
 use App\Http\Controllers\GeneratedDocumentController;
@@ -10,6 +11,7 @@ use App\Http\Controllers\Master\UnitController;
 use App\Http\Controllers\Master\VendorController;
 use App\Http\Controllers\PrivateFileController;
 use App\Http\Controllers\PurchaseRequestController;
+use App\Http\Controllers\RecycleBinController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
@@ -65,6 +67,12 @@ Route::middleware('auth')->group(function () {
     Route::get('contracts/{contract}/attachments/{attachment}', [ContractController::class, 'downloadAttachment'])->name('contracts.attachments.download');
 
     Route::get('documents/{document}', GeneratedDocumentController::class)->name('documents.download');
+
+    Route::get('recycle-bin', [RecycleBinController::class, 'index'])->name('recycle-bin.index');
+    Route::post('recycle-bin/{item}/restore', [RecycleBinController::class, 'restore'])->name('recycle-bin.restore');
+    Route::delete('recycle-bin/{item}', [RecycleBinController::class, 'destroy'])->name('recycle-bin.destroy');
+
+    Route::get('activity', [ActivityLogController::class, 'index'])->name('activity.index');
 
     Route::get('lhstp', [LhstpController::class, 'index'])->name('lhstp.index');
     Route::get('lhstp/create', [LhstpController::class, 'create'])->name('lhstp.create');

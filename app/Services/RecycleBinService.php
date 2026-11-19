@@ -119,6 +119,16 @@ class RecycleBinService
     }
 
     /**
+     * Permanently delete one recycle bin entry when nothing protects it.
+     *
+     * @return string|null Null when purged, otherwise the blocking reason.
+     */
+    public function purgeItem(RecycleBinItem $item): ?string
+    {
+        return $this->purge($item);
+    }
+
+    /**
      * @return string|null Null when purged, otherwise the blocking reason.
      */
     private function purge(RecycleBinItem $item): ?string
