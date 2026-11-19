@@ -84,7 +84,15 @@
                 </div>
                 <div>
                     <dt class="text-xs text-muted">Nomor PO</dt>
-                    <dd class="mt-0.5 text-sm">{{ $version?->po_number_snapshot ?? '-' }}</dd>
+                    <dd class="mt-0.5 text-sm">
+                        @if ($lhstp->contract)
+                            <a href="{{ route('contracts.show', $lhstp->contract) }}" class="font-medium text-primary hover:underline">
+                                {{ $version?->po_number_snapshot ?? $lhstp->contract->po_number }}
+                            </a>
+                        @else
+                            {{ $version?->po_number_snapshot ?? '-' }}
+                        @endif
+                    </dd>
                 </div>
                 <div>
                     <dt class="text-xs text-muted">Tanggal kontrak</dt>

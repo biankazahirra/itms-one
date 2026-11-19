@@ -15,6 +15,10 @@
             <div class="flex flex-wrap items-center gap-2">
                 <a href="{{ route('contracts.edit', $contract) }}" class="btn btn-primary">Ubah Kontrak</a>
 
+                @if ($contract->isSelectableForLhstp())
+                    <a href="{{ route('lhstp.create', ['contract_id' => $contract->id]) }}" class="btn btn-secondary">Buat LHSTP</a>
+                @endif
+
                 @if ($contract->isArchived())
                     <form method="POST" action="{{ route('contracts.unarchive', $contract) }}">
                         @csrf

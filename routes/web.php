@@ -3,6 +3,7 @@
 use App\Http\Controllers\ActivityLogController;
 use App\Http\Controllers\BudgetController;
 use App\Http\Controllers\ContractController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\GeneratedDocumentController;
 use App\Http\Controllers\LhstpController;
 use App\Http\Controllers\LoginController;
@@ -20,7 +21,7 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::middleware('auth')->group(function () {
-    Route::get('/', fn () => view('dashboard'))->name('dashboard');
+    Route::get('/', DashboardController::class)->name('dashboard');
     Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
 
     Route::prefix('master')->name('master.')->group(function () {

@@ -9,6 +9,10 @@
                    description="{{ $version?->subject }}">
         <x-slot:action>
             <div class="flex flex-wrap items-center gap-2">
+                @if ($version !== null)
+                    <a href="{{ route('rab.create', ['from_pr' => $purchaseRequest->id]) }}" class="btn btn-secondary">Buat RAB dari PR</a>
+                @endif
+
                 @if ($purchaseRequest->isDraft())
                     <a href="{{ route('purchase-requests.edit', $purchaseRequest) }}" class="btn btn-secondary">Ubah Draft</a>
 
