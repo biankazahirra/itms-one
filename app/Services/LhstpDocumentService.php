@@ -510,7 +510,7 @@ class LhstpDocumentService
         $this->tableText($row->addCell(Converter::pointToTwip(13.5)), $number);
         $this->tableText($row->addCell(Converter::pointToTwip(46.7)), 'Nama');
         $this->tableText($row->addCell(Converter::pointToTwip(13)), ':');
-        $this->tableText($row->addCell(Converter::pointToTwip(self::TEXT_WIDTH - 73.2)), $name, null, true);
+        $this->tableText($row->addCell(Converter::pointToTwip(self::TEXT_WIDTH - 73.2)), $name, 'both', true);
 
         $row = $table->addRow();
         $this->tableText($row->addCell(Converter::pointToTwip(13.5)), '');
@@ -519,9 +519,9 @@ class LhstpDocumentService
         $cell = $row->addCell(Converter::pointToTwip(self::TEXT_WIDTH - 73.2));
 
         if (is_array($position)) {
-            $this->richText($cell, $position, ['size' => 11]);
+            $this->richText($cell, $position, ['size' => 11], ['alignment' => 'both']);
         } else {
-            $this->tableText($cell, $position);
+            $this->tableText($cell, $position, 'both');
         }
     }
 
