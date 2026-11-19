@@ -50,7 +50,25 @@ it('applies mapped rows through application services', function () {
         ->and(PurchaseRequest::first()->status)->toBe(PurchaseRequest::STATUS_DRAFT);
 });
 
+it('records imported master rows in the report', function () {
+    Storage::fake('local');
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->artisan('data:import-legacy-pr-db', [
+            '--file' => fixturePath(), '--apply' => true,
+            '--user' => $user->id, '--backup-confirmed' => true,
+        ])
+        ->assertSuccessful();
+
+    $csv = Storage::disk('local')->get(Storage::disk('local')->files('imports')[0]);
+
+    expect($csv)->toContain('department,Accounting,imported,')
+        ->toContain('vendor,PT Kosera Karya Prima,imported,');
+});
+
 it('refuses to apply without backup confirmation', function () {
+    Storage::fake('local');
     $user = User::factory()->create();
 
     $this->actingAs($user)

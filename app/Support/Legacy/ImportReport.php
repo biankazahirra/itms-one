@@ -27,7 +27,9 @@ class ImportReport
             };
 
             foreach ($rows as $row) {
-                $sourceId = $row['source_id'] ?? $row['company_name'] ?? '';
+                $sourceId = is_array($row)
+                    ? (string) ($row['source_id'] ?? $row['company_name'] ?? '')
+                    : (string) $row;
                 $key = $targetTable.':'.$sourceId;
                 $target = $imported[$key] ?? null;
 

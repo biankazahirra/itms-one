@@ -102,7 +102,7 @@ class ImportLegacyPrDatabase extends Command
         $imported = [];
 
         foreach ($mapped['departments'] as $name) {
-            $key = 'departments:'.$name;
+            $key = 'department:'.$name;
 
             if (isset($seen[$key])) {
                 continue;
@@ -116,8 +116,7 @@ class ImportLegacyPrDatabase extends Command
         }
 
         foreach ($mapped['vendors'] as $vendor) {
-            $sourceId = implode('|', $vendor['legacy_ids']);
-            $key = 'vendors:'.$sourceId;
+            $key = 'vendor:'.$vendor['company_name'];
 
             if (isset($seen[$key])) {
                 continue;
