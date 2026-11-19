@@ -189,3 +189,25 @@ php artisan cache:clear
 - [x] LAN clients use browser access; MySQL bound to localhost only.
 - [x] All required tests pass (`php artisan test`, `vendor/bin/pint --test`).
 - [x] Deployment and recovery instructions documented (this guide).
+
+## 11. One-time Legacy PR Import
+
+`pr_db.sql` is read-only source material. Never edit or import it into the application database directly.
+
+1. Take a backup first with `scripts/backup.ps1`.
+2. Run the dry run:
+
+```powershell
+php artisan data:import-legacy-pr-db --file="C:\Users\Administrator\Downloads\pr_db.sql"
+```
+
+3. Read the CSV report written to `storage/app/private/imports/legacy-pr-*.csv`. Each row is `table,source_id,status,target_id,target_number,reason`. `planned` rows are ready; `skipped` rows include the reason. Keep this CSV as the source-to-target map.
+4. Apply only after the report is reviewed:
+
+```powershell
+php artisan data:import-legacy-pr-db --file="C:\Users\Administrator\Downloads\pr_db.sql" --apply --user=<admin user id> --backup-confirmed
+```
+
+5. Verify counts, then keep the newest CSV with the backup. Re-running without `--force` skips source keys already listed as `imported` in the newest report.
+
+Rules for this dump: only vendors, departments, valid PR headers, and valid PR items are imported. All new PR numbers come from `DocumentNumberService`. Contracts and LHSTPs are skipped because the dump has no PPN/payment rules and several required fields are missing; their rows stay in the report with reasons. Imported PRs remain Draft.
