@@ -211,3 +211,5 @@ php artisan data:import-legacy-pr-db --file="C:\Users\Administrator\Downloads\pr
 5. Verify counts, then keep the newest CSV with the backup. Re-running without `--force` skips source keys already listed as `imported` in the newest report.
 
 Rules for this dump: only vendors, departments, valid PR headers, and valid PR items are imported. All new PR numbers come from `DocumentNumberService`. Contracts and LHSTPs are skipped because the dump has no PPN/payment rules and several required fields are missing; their rows stay in the report with reasons. Imported PRs remain Draft.
+
+Import applied on 2026-11-19: 94 PRs, 2 vendors, and 3 departments were added to `itms_admin_db`. Backup: `C:\ITMS-Backup\20261119-095735`. Because two PRs were imported in a follow-up run after a report-key fix, keep both apply CSVs (`legacy-pr-20261119095754-6afe65b263f63.csv` and `legacy-pr-20261119100125-6afe66855cc3a.csv`) together as the complete source-to-target map.
