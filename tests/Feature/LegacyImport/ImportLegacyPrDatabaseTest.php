@@ -1,6 +1,10 @@
 <?php
 
+use App\Models\Contract;
+use App\Models\Department;
 use App\Models\PurchaseRequest;
+use App\Models\User;
+use App\Models\Vendor;
 use Illuminate\Support\Facades\Storage;
 
 function fixturePath(): string
@@ -26,4 +30,39 @@ it('lists skipped rows with reasons in the report', function () {
 
     expect($csv)->toContain('kontrak,1,skipped')
         ->toContain('Duplicate PO; contract ID 2 kept');
+});
+
+it('applies mapped rows through application services', function () {
+    Storage::fake('local');
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->artisan('data:import-legacy-pr-db', [
+            '--file' => fixturePath(), '--apply' => true,
+            '--user' => $user->id, '--backup-confirmed' => true,
+        ])
+        ->assertSuccessful();
+
+    expect(Vendor::where('company_name', 'PT Kosera Karya Prima')->count())->toBe(1)
+        ->and(Department::where('name', 'Accounting')->exists())->toBeTrue()
+        ->and(PurchaseRequest::where('pr_number', 'PR-000001')->exists())->toBeTrue()
+        ->and(Contract::count())->toBe(0)
+        ->and(PurchaseRequest::first()->status)->toBe(PurchaseRequest::STATUS_DRAFT);
+});
+
+it('is idempotent', function () {
+    Storage::fake('local');
+    $user = User::factory()->create();
+
+    foreach (range(1, 2) as $run) {
+        $this->actingAs($user)
+            ->artisan('data:import-legacy-pr-db', [
+                '--file' => fixturePath(), '--apply' => true,
+                '--user' => $user->id, '--backup-confirmed' => true,
+            ])
+            ->assertSuccessful();
+    }
+
+    expect(PurchaseRequest::count())->toBe(2)
+        ->and(Contract::count())->toBe(0);
 });
