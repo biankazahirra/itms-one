@@ -3,7 +3,7 @@
 @section('title', 'Ubah PR')
 
 @section('content')
-    <x-page-header title="Ubah PR {{ $purchaseRequest->pr_number }}"
+    <x-page-header :back="route('purchase-requests.index')" title="Ubah PR {{ $purchaseRequest->pr_number }}"
                    description="Perubahan hanya berlaku pada versi Draft saat ini." />
 
     <x-session-alerts />

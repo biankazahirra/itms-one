@@ -3,7 +3,7 @@
 @section('title', 'Buat PR')
 
 @section('content')
-    <x-page-header title="Buat Purchase Requisition"
+    <x-page-header :back="route('purchase-requests.index')" title="Buat Purchase Requisition"
                    description="PR disimpan sebagai Draft dan dapat difinalisasi setelah data lengkap." />
 
     <x-session-alerts />

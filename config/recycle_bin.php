@@ -3,6 +3,8 @@
 use App\Models\Budget;
 use App\Models\Contract;
 use App\Models\Lhstp;
+use App\Models\PaymentEvidence;
+use App\Models\PrDocument;
 use App\Models\PurchaseRequest;
 
 return [
@@ -20,6 +22,8 @@ return [
 
     'types' => [
         'purchase_request' => PurchaseRequest::class,
+        'pr_document' => PrDocument::class,
+        'payment_evidence' => PaymentEvidence::class,
         'budget' => Budget::class,
         'contract' => Contract::class,
         'lhstp' => Lhstp::class,

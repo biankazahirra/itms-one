@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Budget;
 use App\Models\Contract;
 use App\Models\Lhstp;
+use App\Models\PaymentEvidence;
+use App\Models\PrDocument;
 use App\Models\PurchaseRequest;
 use App\Models\RecycleBinItem;
 use App\Services\RecycleBinService;
@@ -21,6 +23,8 @@ class RecycleBinController extends Controller
      */
     private const MODULES = [
         'purchase_request' => ['label' => 'Purchase Requisition', 'number' => 'pr_number', 'description' => 'subject'],
+        'pr_document' => ['label' => 'Dokumen PR', 'number' => 'original_filename', 'description' => 'category'],
+        'payment_evidence' => ['label' => 'Bukti Pembayaran', 'number' => 'original_filename', 'description' => 'payment_record_id'],
         'budget' => ['label' => 'RAB', 'number' => 'rab_number', 'description' => 'work_name'],
         'contract' => ['label' => 'Kontrak', 'number' => 'po_number', 'description' => 'work_name'],
         'lhstp' => ['label' => 'LHSTP', 'number' => 'lhstp_number', 'description' => 'work_name_snapshot'],
@@ -90,6 +94,8 @@ class RecycleBinController extends Controller
 
         return match (true) {
             $entity instanceof PurchaseRequest => $number ? $entity->pr_number : $entity->currentVersion?->subject,
+            $entity instanceof PrDocument => $number ? $entity->original_filename : $entity->category,
+            $entity instanceof PaymentEvidence => $number ? $entity->original_filename : 'Pembayaran #'.$entity->payment_record_id,
             $entity instanceof Budget => $number ? $entity->rab_number : $entity->currentVersion?->work_name,
             $entity instanceof Contract => $number ? $entity->po_number : $entity->work_name,
             $entity instanceof Lhstp => $number ? $entity->lhstp_number : $entity->currentVersion?->work_name_snapshot,

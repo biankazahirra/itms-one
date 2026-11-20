@@ -10,7 +10,8 @@ use App\Http\Controllers\LoginController;
 use App\Http\Controllers\Master\DepartmentController;
 use App\Http\Controllers\Master\UnitController;
 use App\Http\Controllers\Master\VendorController;
-use App\Http\Controllers\PrivateFileController;
+use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\PrDocumentController;
 use App\Http\Controllers\PurchaseRequestController;
 use App\Http\Controllers\RecycleBinController;
 use Illuminate\Support\Facades\Route;
@@ -44,6 +45,11 @@ Route::middleware('auth')->group(function () {
     Route::post('purchase-requests/{purchaseRequest}/revision', [PurchaseRequestController::class, 'revision'])->name('purchase-requests.revision');
     Route::post('purchase-requests/{purchaseRequest}/archive', [PurchaseRequestController::class, 'archive'])->name('purchase-requests.archive');
     Route::post('purchase-requests/{purchaseRequest}/documents', [PurchaseRequestController::class, 'generateDocument'])->name('purchase-requests.documents.store');
+    Route::post('purchase-requests/{purchaseRequest}/stage-updates', [PurchaseRequestController::class, 'storeStageUpdate'])->name('purchase-requests.stage-updates.store');
+    Route::post('purchase-requests/{purchaseRequest}/pr-documents', [PrDocumentController::class, 'store'])->name('purchase-requests.pr-documents.store');
+    Route::get('purchase-requests/{purchaseRequest}/pr-documents/{prDocument}/preview', [PrDocumentController::class, 'preview'])->name('purchase-requests.pr-documents.preview')->scopeBindings();
+    Route::get('purchase-requests/{purchaseRequest}/pr-documents/{prDocument}', [PrDocumentController::class, 'download'])->name('purchase-requests.pr-documents.download')->scopeBindings();
+    Route::delete('purchase-requests/{purchaseRequest}/pr-documents/{prDocument}', [PrDocumentController::class, 'destroy'])->name('purchase-requests.pr-documents.destroy')->scopeBindings();
     Route::get('rab', [BudgetController::class, 'index'])->name('rab.index');
     Route::get('rab/create', [BudgetController::class, 'create'])->name('rab.create');
     Route::post('rab', [BudgetController::class, 'store'])->name('rab.store');
@@ -65,9 +71,19 @@ Route::middleware('auth')->group(function () {
     Route::delete('contracts/{contract}', [ContractController::class, 'destroy'])->name('contracts.destroy');
     Route::post('contracts/{contract}/archive', [ContractController::class, 'archive'])->name('contracts.archive');
     Route::post('contracts/{contract}/unarchive', [ContractController::class, 'unarchive'])->name('contracts.unarchive');
+    Route::post('contracts/{contract}/unlink-pr', [ContractController::class, 'unlinkPurchaseRequest'])->name('contracts.unlink');
     Route::post('contracts/{contract}/attachments', [ContractController::class, 'storeAttachments'])->name('contracts.attachments.store');
     Route::delete('contracts/{contract}/attachments/{attachment}', [ContractController::class, 'destroyAttachment'])->name('contracts.attachments.destroy');
     Route::get('contracts/{contract}/attachments/{attachment}', [ContractController::class, 'downloadAttachment'])->name('contracts.attachments.download');
+
+    Route::post('contracts/{contract}/payments', [PaymentController::class, 'store'])->name('contracts.payments.store');
+    Route::post('contracts/{contract}/payments/{payment}/confirm', [PaymentController::class, 'confirm'])->name('contracts.payments.confirm')->scopeBindings();
+    Route::post('contracts/{contract}/payments/{payment}/corrections', [PaymentController::class, 'correct'])->name('contracts.payments.correct')->scopeBindings();
+    Route::delete('contracts/{contract}/payments/{payment}', [PaymentController::class, 'destroy'])->name('contracts.payments.destroy')->scopeBindings();
+    Route::post('contracts/{contract}/payments/{payment}/evidences', [PaymentController::class, 'storeEvidence'])->name('contracts.payments.evidences.store')->scopeBindings();
+    Route::get('contracts/{contract}/payments/{payment}/evidences/{paymentEvidence}/preview', [PaymentController::class, 'preview'])->name('contracts.payments.evidences.preview')->scopeBindings();
+    Route::get('contracts/{contract}/payments/{payment}/evidences/{paymentEvidence}', [PaymentController::class, 'download'])->name('contracts.payments.evidences.download')->scopeBindings();
+    Route::delete('contracts/{contract}/payments/{payment}/evidences/{paymentEvidence}', [PaymentController::class, 'destroyEvidence'])->name('contracts.payments.evidences.destroy')->scopeBindings();
 
     Route::get('documents/{document}', GeneratedDocumentController::class)->name('documents.download');
 
@@ -88,8 +104,4 @@ Route::middleware('auth')->group(function () {
     Route::post('lhstp/{lhstp}/revise', [LhstpController::class, 'revise'])->name('lhstp.revise');
     Route::post('lhstp/{lhstp}/archive', [LhstpController::class, 'archive'])->name('lhstp.archive');
     Route::post('lhstp/{lhstp}/documents', [LhstpController::class, 'generateDocument'])->name('lhstp.documents.store');
-
-    Route::get('/files/{path}', PrivateFileController::class)
-        ->where('path', '.*')
-        ->name('files.show');
 });

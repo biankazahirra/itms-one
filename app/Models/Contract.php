@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
     'po_number',
     'contract_date',
     'vendor_id',
+    'purchase_request_id',
     'work_name',
     'representative_name',
     'representative_position',
@@ -82,6 +83,11 @@ class Contract extends Model
         return $this->hasMany(ContractTermin::class)->orderBy('sort_order');
     }
 
+    public function purchaseRequest(): BelongsTo
+    {
+        return $this->belongsTo(PurchaseRequest::class);
+    }
+
     public function attachments(): HasMany
     {
         return $this->hasMany(ContractAttachment::class);
@@ -95,6 +101,13 @@ class Contract extends Model
     public function lhstps(): HasMany
     {
         return $this->hasMany(Lhstp::class);
+    }
+
+    public function payments(): HasMany
+    {
+        return $this->hasMany(PaymentRecord::class)
+            ->orderByDesc('payment_date')
+            ->orderByDesc('id');
     }
 
     public function creator(): BelongsTo
@@ -142,12 +155,13 @@ class Contract extends Model
 
     /**
      * Keep purged contracts from orphaning stored attachments, the contract
-     * change history, or its LHSTP records.
+     * change history, its LHSTP records or payment records.
      */
     public function canBePurged(): bool
     {
         return ! $this->attachments()->exists()
             && ! $this->activityLogs()->exists()
-            && ! $this->lhstps()->exists();
+            && ! $this->lhstps()->exists()
+            && ! $this->payments()->exists();
     }
 }

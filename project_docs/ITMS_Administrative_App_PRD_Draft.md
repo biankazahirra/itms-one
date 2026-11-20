@@ -2,10 +2,11 @@
 ## ITMS Administrative Management Web Application
 
 **Document status:** Draft for stakeholder review  
-**Version:** 0.4  
+**Version:** 0.5  
 **Date:** 16 November 2026  
 **Primary user:** IT & Management System (ITMS) administrative user  
 **Product type:** Local web application
+**Approved addendum:** 19 November 2026 — PR Tracking, Document Archive & Payment Tracking (Section 16)
 
 ---
 
@@ -199,6 +200,8 @@ Statuses:
 - **Archived:** retained as an archive and not permanently deleted.
 
 Revision history must be preserved. Final and Archived PR records must not be permanently deleted through ordinary record deletion.
+
+The document statuses above are unchanged by the addendum. A separate tracking status dimension is defined in Section 16; it does not replace or repurpose Draft, Final, or Archived.
 
 ### 5.7 PR PDF Generation
 
@@ -758,3 +761,127 @@ These documents are design baselines. Implementation-specific details requiring 
 ## 15. Approval Status
 
 This document is a consolidated draft for stakeholder review. Section 11 contains recommended defaults proposed by the product analyst; the user may accept or amend them. The initial technical baseline has now been documented in the separate Technical Design Document. The PRD and technical design remain reviewable baselines and may be amended when stakeholder feedback or implementation tests identify a necessary change.
+
+---
+
+## 16. Approved Addendum — PR Tracking, Document Archive & Payment Tracking
+
+**Status:** Approved by the user, 19 November 2026.
+**Source:** Requirements Addendum "PR Tracking, Document Archive & Payment Tracking".
+**Effect:** This section adds requirements. Earlier sections remain in force unless explicitly changed here.
+
+### 16.1 Overall workflow
+
+1. PR Submission Form
+2. PR Tracking
+3. Multiple Contract/PO and Vendor records
+4. LHSTP
+5. Payment Tracking
+
+A PR may be associated with multiple Contracts/POs. The existing Contract record represents the PO. A separate Purchase Orders entity is not introduced.
+
+### 16.2 Two independent PR status dimensions
+
+**Document Status** — unchanged from Section 5.6: Draft, Final, Archived. These statuses must not be replaced or repurposed.
+
+**Tracking Status** — a new, separate dimension with these values:
+
+- `Not Tracked`
+- `In Progress`
+- `Done`
+
+Rules:
+
+- Tracking status must not change document status.
+- Document archival must not automatically mark a PR as Done.
+- A PR becomes Done when goods have been received or services have been completed.
+- All 99 existing PR records (96 Archived, 3 Final) have no stage history and therefore derive `Not Tracked`. Do not infer historical progress or fabricate stage history.
+- Payment completion must not modify tracking status.
+- Tracking Status is derived from the append-only `pr_stage_updates` history; no `tracking_status` column exists in `purchase_requests`: no stage records → `Not Tracked`; Stage 1–4 → `In Progress`; Stage 5 → `Done`. Stage history is authoritative.
+
+### 16.3 PR Tracking workflow
+
+Five manually updated stages, in order:
+
+1. Submission to HC/Accounting
+2. ITMS Approval
+3. HC/Accounting Verification
+4. Procurement Submission
+5. Goods/Services Received
+
+Rules:
+
+- Stages progress sequentially.
+- Tracking begins only when a user manually confirms Stage 1. A PR becoming Final does not start tracking.
+- Every update and correction is appended to an immutable history. Previous updates are never removed or overwritten.
+- Each history entry records timestamp, actor, and an optional note.
+- A Stage 5 record yields tracking status `Done` under the derived mapping.
+- Payment status has no effect on tracking status.
+
+### 16.4 PR to Contract/PO relationship
+
+- Add a nullable `purchase_request_id` relationship to the existing `contracts` entity.
+- One PR can have multiple Contracts/POs.
+- One Contract/PO can belong to at most one PR.
+- A Contract/PO may remain unlinked to a PR.
+- Existing PO Number uniqueness is unchanged.
+- Each Contract/PO retains its existing single-vendor relationship.
+- The relationship must be visible and manageable from the PR and Contract interfaces.
+- Permanent deletion of a PR is restricted while linked Contracts/POs exist. A Contract may be unlinked only if it has no LHSTP records and no Payment Records; otherwise unlinking is blocked. Every successful unlink is recorded in Activity History. A PR may be permanently deleted only after all linked Contracts have been safely unlinked. Unlinking and PR deletion must never cascade-delete Contracts, LHSTPs, payment records or historical records.
+
+### 16.5 PR Document Archive
+
+Create a dedicated `pr_documents` entity. It is distinct from system-generated documents in `generated_documents`.
+
+Fixed category list:
+
+1. PR Submission Form
+2. Supporting Documents
+3. Official PR Document
+4. Procurement Documents
+5. Other Documents
+
+Each document retains: associated PR, category, original filename, storage path, MIME type, file size, checksum, uploaded by, upload timestamp, and optional notes.
+
+File handling:
+
+- Private storage outside the public web root.
+- Authorized download for supported formats.
+- Preview for PDF, JPG, and PNG. Other supported formats may be downloaded only.
+- Download and preview must enforce record-level authorization. Arbitrary private storage paths must not be exposed.
+- Deletion integrates with the Shared Recycle Bin.
+- Permanent purge removes both the database record and the physical file.
+- User-uploaded documents remain distinct from system-generated documents.
+
+Integrity: uploading or deleting an archived document must not modify or overwrite a finalized PR version or a generated historical document.
+
+### 16.6 Payment Tracking
+
+- Payment tracking is independent of LHSTP document status. A Final LHSTP does not prove that the vendor was actually paid.
+- Payment records are stored in `payment_records`, each associated with the relevant Contract/PO and payment term, not only with the parent PR. Supporting files are stored in `payment_evidences`.
+- Payment statuses: `Unpaid`, `Partially Paid`, `Paid`.
+- Payment records support payment date, payment amount, payment reference, and supporting payment evidence.
+- A contract may have multiple payment records. Each payment record may have multiple evidence attachments.
+- Payment obligations are the accumulated total of Final LHSTP amounts for the relevant contract. Draft and Archived LHSTPs do not contribute.
+- Payment status is calculated from confirmed payment records. Overpayments exceeding the outstanding obligation are rejected.
+- Status values are `Unpaid`, `Partially Paid`, and `Paid`. Individual LHSTP payment progress should be visible where applicable; contract-level status summarizes the overall position.
+- New payment records start as `Draft`. Draft payments do not contribute to paid totals or payment status. Only `Confirmed` payments count as actual payments.
+- Confirmed payment records cannot be directly edited or deleted. Corrections are recorded as new correction entries linked to the original record; originals and their history remain preserved.
+- Evidence formats are limited to PDF, JPG, JPEG and PNG, with a maximum of 10 MB per file. Evidence deletion uses the Shared Recycle Bin, is restorable, and permanent purge removes both database records and physical files.
+- Revisions or archiving of a Final LHSTP are blocked if the change would cause Confirmed payments to exceed the revised payment obligation. Resolve the discrepancy through a recorded payment correction first. Original LHSTP records and revision history remain preserved.
+- A PR-level payment summary, if displayed, is derived from linked contracts and their payment records. It is not a separately maintained source of truth.
+- Payment tracking must not automatically modify PR tracking status.
+
+### 16.7 Existing module preservation
+
+The addendum preserves: PR document lifecycle and version history, PR numbering, RAB relationships and behavior, Contract PO uniqueness, Contract-to-Vendor relationships, Contract payment-term behavior, LHSTP snapshots/version history/calculations/document generation, Shared Recycle Bin behavior, and existing dashboard calculations unless explicitly approved for extension.
+
+### 16.8 Known existing technical concern
+
+`ContractService::update()` deletes and recreates contract payment terms. This may fail when a term is already referenced by a Final LHSTP. It must be investigated and fixed in a separately scoped, approved task. Unrelated Contract Management behavior must not be silently refactored.
+
+### 16.9 Open decisions
+
+Decisions 6–9 resolved the first set of open items; Decisions 10–14 resolved tracking storage, payment confirmation/correction, evidence formats and limits, contract unlinking, and LHSTP obligation-change conflicts. Only one detail remains unresolved and must not be assumed. See `DECISION_LOG.md` for the full list.
+
+1. Additional payment edge cases not explicitly approved.

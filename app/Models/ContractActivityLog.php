@@ -36,6 +36,7 @@ class ContractActivityLog extends Model
         'monthly_payment_amount' => 'Nominal bulanan',
         'full_financing_amount' => 'Nominal full financing',
         'status' => 'Status',
+        'purchase_request_id' => 'PR terkait',
         'termins' => 'Jadwal termin',
     ];
 

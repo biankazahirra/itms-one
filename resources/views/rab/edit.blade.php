@@ -3,7 +3,7 @@
 @section('title', 'Ubah Draft RAB')
 
 @section('content')
-    <x-page-header title="Ubah Draft RAB"
+    <x-page-header :back="route('rab.index')" title="Ubah Draft RAB"
                    description="Hanya versi Draft yang dapat diubah. Item hasil impor PR tetap dapat diedit." />
 
     <x-session-alerts />

@@ -72,6 +72,21 @@ class PurchaseRequest extends Model
             ->where('entity_type', GeneratedDocument::ENTITY_PURCHASE_REQUEST);
     }
 
+    public function stageUpdates(): HasMany
+    {
+        return $this->hasMany(PrStageUpdate::class)->orderBy('occurred_at')->orderBy('id');
+    }
+
+    public function contracts(): HasMany
+    {
+        return $this->hasMany(Contract::class)->orderBy('po_number');
+    }
+
+    public function prDocuments(): HasMany
+    {
+        return $this->hasMany(PrDocument::class)->latest('uploaded_at')->latest('id');
+    }
+
     public function activityLogs(): HasMany
     {
         return $this->hasMany(ActivityLog::class, 'entity_id')
@@ -100,12 +115,15 @@ class PurchaseRequest extends Model
     }
 
     /**
-     * A PR may only be purged when no finalized history or document depends on it.
+     * A PR may only be purged when no finalized history, document or linked
+     * Contract depends on it.
      */
     public function canBePurged(): bool
     {
         return $this->isDraft()
             && ! $this->versions()->whereNotNull('finalized_at')->exists()
-            && ! $this->documents()->exists();
+            && ! $this->documents()->exists()
+            && ! $this->prDocuments()->withTrashed()->exists()
+            && ! $this->contracts()->withTrashed()->exists();
     }
 }

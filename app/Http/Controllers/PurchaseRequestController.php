@@ -4,15 +4,22 @@ namespace App\Http\Controllers;
 
 use App\Models\Department;
 use App\Models\PurchaseRequest;
+use App\Services\PaymentStatusCalculator;
+use App\Services\PrTrackingService;
 use App\Services\PurchaseRequestService;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class PurchaseRequestController extends Controller
 {
-    public function __construct(private readonly PurchaseRequestService $purchaseRequests) {}
+    public function __construct(
+        private readonly PurchaseRequestService $purchaseRequests,
+        private readonly PaymentStatusCalculator $paymentStatus,
+        private readonly PrTrackingService $tracking,
+    ) {}
 
     public function index(Request $request): View
     {
@@ -22,6 +29,9 @@ class PurchaseRequestController extends Controller
         $departmentId = (string) $request->query('department', '');
         $dateFrom = (string) $request->query('date_from', '');
         $dateTo = (string) $request->query('date_to', '');
+        $tracking = (string) $request->query('tracking', '');
+
+        $latestStage = '(select stage from pr_stage_updates where pr_stage_updates.purchase_request_id = purchase_requests.id order by pr_stage_updates.id desc limit 1)';
 
         $purchaseRequests = PurchaseRequest::query()
             ->with(['currentVersion.department'])
@@ -36,6 +46,9 @@ class PurchaseRequestController extends Controller
             ->when($departmentId !== '', fn ($query) => $query->whereHas('currentVersion', fn ($query) => $query->where('recipient_department_id', $departmentId)))
             ->when($dateFrom !== '', fn ($query) => $query->whereHas('currentVersion', fn ($query) => $query->whereDate('pr_date', '>=', $dateFrom)))
             ->when($dateTo !== '', fn ($query) => $query->whereHas('currentVersion', fn ($query) => $query->whereDate('pr_date', '<=', $dateTo)))
+            ->when($tracking === PrTrackingService::STATUS_NOT_TRACKED, fn ($query) => $query->whereRaw("{$latestStage} is null"))
+            ->when($tracking === PrTrackingService::STATUS_IN_PROGRESS, fn ($query) => $query->whereRaw("{$latestStage} is not null and {$latestStage} <> ?", [PrTrackingService::STAGES[4]]))
+            ->when($tracking === PrTrackingService::STATUS_DONE, fn ($query) => $query->whereRaw("{$latestStage} = ?", [PrTrackingService::STAGES[4]]))
             ->latest('updated_at')
             ->paginate(15)
             ->withQueryString();
@@ -49,6 +62,10 @@ class PurchaseRequestController extends Controller
             'departmentId' => $departmentId,
             'dateFrom' => $dateFrom,
             'dateTo' => $dateTo,
+            'tracking' => $tracking,
+            'trackingStatuses' => $purchaseRequests->getCollection()
+                ->mapWithKeys(fn (PurchaseRequest $pr): array => [$pr->id => $this->tracking->status($pr)])
+                ->all(),
         ]);
     }
 
@@ -83,6 +100,9 @@ class PurchaseRequestController extends Controller
             'versions.department',
             'currentVersion.items',
             'currentVersion.department',
+            'contracts.vendor',
+            'prDocuments.uploader',
+            'stageUpdates.creator',
         ]);
 
         $activityLogs = $purchaseRequest->activityLogs()
@@ -94,7 +114,30 @@ class PurchaseRequestController extends Controller
             'purchaseRequest' => $purchaseRequest,
             'activityLogs' => $activityLogs,
             'documentsByVersion' => $purchaseRequest->documents()->get()->keyBy('version_id'),
+            'paymentSummaries' => $purchaseRequest->contracts->map(fn ($contract): array => [
+                'contract' => $contract,
+                'status' => $this->paymentStatus->status($contract),
+                'paid' => $this->paymentStatus->confirmedTotal($contract),
+                'obligation' => $this->paymentStatus->obligation($contract),
+            ])->all(),
+            'trackingStatus' => $this->tracking->status($purchaseRequest),
+            'trackingStages' => $this->tracking->allowedStages($purchaseRequest),
         ]);
+    }
+
+    public function storeStageUpdate(Request $request, PurchaseRequest $purchaseRequest): RedirectResponse
+    {
+        $data = $request->validate([
+            'stage' => ['required', 'string', Rule::in(PrTrackingService::STAGES)],
+            'note' => ['nullable', 'string', 'max:1000'],
+        ], [], [
+            'stage' => 'Tahap',
+            'note' => 'Catatan',
+        ]);
+
+        $this->tracking->record($purchaseRequest, $data['stage'], $request->user(), $data['note'] ?? null);
+
+        return back()->with('status', 'Tahap tracking PR diperbarui.');
     }
 
     public function edit(PurchaseRequest $purchaseRequest): View|RedirectResponse

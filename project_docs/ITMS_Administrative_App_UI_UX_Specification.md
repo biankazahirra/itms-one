@@ -2,9 +2,10 @@
 ## ITMS Administrative Management Web Application
 
 **Status:** Proposed visual and interaction baseline  
-**Version:** 0.1  
+**Version:** 0.2  
 **Language:** Indonesian user interface  
-**Related:** PRD v0.3, Technical Design v0.2, Implementation Blueprint v0.1
+**Related:** PRD v0.5, Technical Design v0.4, Implementation Blueprint v0.2
+**Addendum:** 19 November 2026 — PR Tracking, Document Archive & Payment Tracking (Section 10)
 
 ## 1. Design Direction
 
@@ -110,8 +111,12 @@ Contains:
 - Contract Active: green.
 - Contract Inactive: amber or neutral.
 - Contract Archived: gray.
+- Tracking `Not Tracked`: neutral gray.
+- Tracking `In Progress`: amber.
+- Tracking `Done`: green.
+- Payment `Unpaid`: neutral; `Partially Paid`: amber; `Paid`: green.
 
-Always show the status text.
+Always show the status text. Tracking status badges must remain visually distinct from document status badges.
 
 ### 4.3 Data table
 
@@ -250,3 +255,43 @@ Do not hide critical information behind many tabs. For PR/RAB/LHSTP, current ver
 - Destructive actions visually distinct and confirmed.
 - Document previews and download links are easy to find.
 - Layout remains usable at laptop and tablet widths.
+
+---
+
+## 10. Addendum UI (approved 19 November 2026)
+
+### 10.1 PR list and detail
+
+- PR list shows Document Status and derived Tracking Status as separate columns; filters for both are separate. Tracking Status comes from stage history, not a stored field.
+- PR detail shows a tracking timeline of five sequential stages with timestamp, actor and note, plus an update form. Completed stages remain visible; corrections appear as additional entries.
+- Tracking starts only after manual confirmation of Stage 1. Finalization must not imply tracking has started.
+- PR detail shows a Document Archive section with category, filename, upload date, notes, preview and download.
+- PR detail shows linked Contracts/POs and a derived payment summary with contract-level status and individual LHSTP progress where applicable.
+- Permanent deletion of a PR with linked Contracts shows a blocking reason and the required resolution path.
+- Archival must not visually imply completion; `Done` appears only after stage 5.
+
+### 10.2 Contract screens
+
+- Contract create/edit includes an optional PR selection field.
+- Contract detail shows the linked PR and payment records with their `Draft` / `Confirmed` state and derived status.
+- Unlink action is disabled with an explanatory reason when the Contract has LHSTP records or Payment Records; successful unlink is recorded in Activity History.
+- PR permanent deletion shows the required unlink steps while linked Contracts remain.
+
+### 10.3 Document previews
+
+- Preview only for PDF, JPG and PNG. Other supported formats show download only.
+- Preview and download links are resolved by record ID; no storage path is shown to the user.
+
+### 10.4 Recycle Bin
+
+- PR documents appear as their own entity type with category and filename.
+- Payment evidence appears as its own entity type and can be restored; permanent purge removes the file.
+- Restore and Delete Permanently use the existing confirmation pattern.
+
+### 10.5 Payments and evidence
+
+- A payment record shows multiple evidence attachments with filename, upload date and download action.
+- Evidence upload accepts PDF, JPG, JPEG and PNG only, up to 10 MB per file; invalid files show a clear error.
+- Payments show `Draft` or `Confirmed` state. Draft payments are visibly excluded from paid totals. Confirmed records are read-only; a correction creates a new linked entry.
+- Overpayment attempts show a blocking error explaining the outstanding obligation.
+- Final LHSTP revision or archiving that would create an overpayment shows a blocking error requiring a recorded payment correction.

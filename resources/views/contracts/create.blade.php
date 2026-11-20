@@ -3,7 +3,7 @@
 @section('title', 'Buat Kontrak')
 
 @section('content')
-    <x-page-header title="Buat Kontrak"
+    <x-page-header :back="route('contracts.index')" title="Buat Kontrak"
                    description="PO Number menjadi identitas kontrak. Nomor PO tidak boleh sama dengan kontrak lain." />
 
     <x-session-alerts />

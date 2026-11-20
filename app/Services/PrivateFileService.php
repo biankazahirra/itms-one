@@ -66,6 +66,18 @@ class PrivateFileService
     }
 
     /**
+     * Display a supported private file inline in the browser.
+     */
+    public function preview(string $path, ?string $displayName = null): StreamedResponse
+    {
+        $safePath = $this->safePath($path);
+
+        abort_if($safePath === null || ! Storage::disk(self::DISK)->exists($safePath), 404);
+
+        return Storage::disk(self::DISK)->response($safePath, $displayName, [], 'inline');
+    }
+
+    /**
      * Reject absolute paths and traversal segments.
      */
     private function safePath(string $path): ?string

@@ -20,6 +20,7 @@ class LhstpService
         private readonly RecycleBinService $recycleBin,
         private readonly LhstpPaymentCalculator $calculator,
         private readonly LhstpDocumentService $documents,
+        private readonly PaymentStatusCalculator $payments,
     ) {}
 
     /**
@@ -190,6 +191,15 @@ class LhstpService
 
             $this->assertTerminAvailable($version->lhstp->contract, $version->termin?->contract_termin_id, $lhstp->id);
 
+            $this->assertPaidWithinObligation(
+                $lhstp->contract,
+                bcadd(
+                    $this->payments->obligationWithout($lhstp->contract, $lhstp),
+                    Money::scale($version->total_payment, 2),
+                    2,
+                ),
+            );
+
             $version->forceFill([
                 'finalized_by' => $actor->id,
                 'finalized_at' => now(),
@@ -290,6 +300,11 @@ class LhstpService
                 ]);
             }
 
+            $this->assertPaidWithinObligation(
+                $lhstp->contract,
+                $this->payments->obligationWithout($lhstp->contract, $lhstp),
+            );
+
             $lhstp->forceFill([
                 'status' => Lhstp::STATUS_ARCHIVED,
                 'archived_at' => now(),
@@ -385,6 +400,19 @@ class LhstpService
         return Money::sum(
             LhstpVersion::query()->whereIn('id', $versionIds)->pluck('total_payment')->all()
         );
+    }
+
+    /**
+     * Decision 14: a change that lowers the obligation below the Confirmed
+     * payments is blocked until a payment correction is recorded.
+     */
+    private function assertPaidWithinObligation(Contract $contract, string $obligationAfter): void
+    {
+        if (bccomp($this->payments->confirmedTotal($contract), $obligationAfter, 2) > 0) {
+            throw ValidationException::withMessages([
+                'status' => 'Pembayaran Confirmed melebihi kewajiban setelah perubahan ini. Catat koreksi pembayaran terlebih dahulu.',
+            ]);
+        }
     }
 
     /**

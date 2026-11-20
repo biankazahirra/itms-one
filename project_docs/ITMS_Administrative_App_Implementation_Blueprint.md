@@ -2,8 +2,9 @@
 ## ITMS Administrative Management Web Application
 
 **Status:** Proposed build specification  
-**Version:** 0.1  
-**Related documents:** PRD v0.2, Technical Design v0.2, ERD v0.1, Database Schema Specification v0.1
+**Version:** 0.2  
+**Addendum:** 19 November 2026 — PR Tracking, Document Archive & Payment Tracking (Section 14)
+**Related documents:** PRD v0.5, Technical Design v0.4, ERD v0.2, Database Schema Specification v0.2
 
 This document completes the application-level design needed before implementation. It defines navigation, screens, workflows, state transitions, calculation services, file handling, testing gates, and deployment behavior. It does not contain executable application code.
 
@@ -443,3 +444,90 @@ Implementation-specific items that cannot responsibly be finalized without runni
 - visual UI styling details after the first clickable application shell is built.
 
 These are environment verification and implementation tasks, not unresolved product requirements.
+
+---
+
+## 14. Addendum implementation blueprint (approved 19 November 2026)
+
+### 14.1 Navigation and screens
+
+No new top-level navigation item is required. The new capabilities appear inside existing screens:
+
+- **PR list:** add derived Tracking Status column and filter; document status filters remain unchanged.
+- **PR detail:** add tracking stage timeline with update form and note; document archive section with upload, preview, download and delete; linked Contracts/POs section with unlink action; derived payment summary.
+- **Contract create/edit:** optional PR selection for the nullable `purchase_request_id` relationship.
+- **Contract detail:** linked PR and payment records section with Draft/Confirmed state and correction action.
+- **Recycle Bin:** include `pr_document` and `payment_evidence` as deletable entity types; restore and permanent purge follow existing protections.
+
+### 14.2 Services
+
+Add `PrTrackingService`, `PrDocumentArchiveService`, `PaymentRecordService`, and `PaymentStatusCalculator` alongside the existing service layer. Keep business rules out of Blade and controllers. Tracking completion is set only by stage 5; payment recording never changes tracking status.
+
+### 14.3 Tracking behavior
+
+- Five fixed stages in order: Submission to HC/Accounting, ITMS Approval, HC/Accounting Verification, Procurement Submission, Goods/Services Received.
+- Stages progress sequentially. Tracking starts only on manual confirmation of Stage 1; finalizing a PR does not start tracking.
+- Every update and correction appends a history row with timestamp, actor and optional note. Prior rows are never deleted or overwritten.
+- Tracking Status is derived from history: no stage rows → `Not Tracked`; Stage 1–4 → `In Progress`; Stage 5 → `Done`. No `tracking_status` column is stored. All 99 existing PRs have no stage rows and derive `Not Tracked`.
+
+### 14.4 Document archive behavior
+
+- Fixed categories: PR Submission Form, Supporting Documents, Official PR Document, Procurement Documents, Other Documents.
+- Upload requires category, file, and optional notes. Metadata and checksum are stored in `pr_documents`.
+- Preview allowlist: PDF, JPG, PNG. Other supported formats are download-only.
+- Routes resolve a record ID to a private path server-side. Arbitrary storage paths are not accepted.
+- Delete moves the document to the shared Recycle Bin; restore keeps the file; permanent purge deletes metadata and physical file.
+- Upload and delete never modify finalized PR versions or generated documents.
+
+### 14.5 Payment behavior
+
+- Payment records belong to a contract and optionally a termin; a contract may have multiple records, each with multiple evidence attachments.
+- New records start as `Draft`. Draft payments do not contribute to paid totals or status. Only `Confirmed` payments count as actual payments.
+- Confirmed records cannot be directly edited or deleted. Corrections append new records linked to the original; originals and history remain preserved.
+- Obligation = accumulated total of Final LHSTP amounts for the contract. Draft and Archived LHSTPs do not contribute.
+- Statuses: Unpaid / Partially Paid / Paid, derived from Confirmed payments. Overpayments exceeding the outstanding obligation are rejected.
+- Final LHSTP revision or archiving is blocked when Confirmed payments would exceed the revised obligation; resolve through a recorded payment correction.
+- Individual LHSTP payment progress is visible where applicable; contract-level status summarizes the position.
+- Evidence formats limited to PDF, JPG, JPEG and PNG, maximum 10 MB per file. Evidence deletion uses the Shared Recycle Bin; restore keeps the file; permanent purge removes metadata and file.
+- A Final LHSTP does not imply payment. Payment does not change PR tracking status.
+- PR-level payment summary is derived from linked contracts, not stored separately.
+- Additional payment edge cases not explicitly approved remain open in `DECISION_LOG.md`.
+
+### 14.6 Validation additions
+
+| Area | Rule | Behavior |
+|---|---|---|
+| Tracking stage | Must be one of five approved stages, sequential | Block invalid or out-of-order value |
+| Stage 1 | Manual confirmation starts tracking | No automatic start on Final |
+| Stage 5 | Sets `Done` | Automatic on successful record |
+| Correction | Appends a new history row | Never overwrite or delete prior rows |
+| Document category | One of five approved categories | Block invalid value |
+| Document preview | PDF/JPG/PNG only | Download-only otherwise |
+| Document access | Record-level authorization | Block unauthorized access |
+| Payment status | New records start `Draft` | Draft excluded from totals and status |
+| Confirmed payment | Direct edit or delete | Block; require new correction entry |
+| Payment correction | New entry linked to original | Preserve original record and history |
+| Payment overpayment | Greater than outstanding obligation | Reject |
+| Final LHSTP revision/archive | Would make Confirmed payments exceed revised obligation | Block; require recorded payment correction |
+| Payment evidence | PDF/JPG/JPEG/PNG only, ≤ 10 MB per file, private storage | Block invalid format or oversize file |
+| Contract unlink | Contract has LHSTP or Payment Records | Block unlink |
+| Successful unlink | Any unlink action | Record in Activity History |
+| PR purge with documents or linked Contracts | Protected dependencies | Block purge, log reason |
+
+### 14.7 Acceptance additions
+
+- Tracking history is append-only, sequential and records actor, timestamp and note; corrections append new rows.
+- Manual Stage 1 confirmation starts tracking; finalization does not. A Stage 5 record yields `Done`; archival and payment never do.
+- Tracking status is derived from `pr_stage_updates` with no stored column; all 99 existing PRs derive `Not Tracked`.
+- One PR links to many contracts; one contract links to at most one PR; unlinked contracts remain valid; PO uniqueness unchanged.
+- Uploaded documents are private, correctly categorized, previewable only for PDF/JPG/PNG, and never overwrite generated files.
+- Recycle-bin restore and permanent purge handle both metadata and physical file.
+- Payment records are contract-scoped and independent of LHSTP status; derived PR summary matches linked contracts.
+- Draft payments are excluded; only Confirmed payments count. Confirmed records are immutable and corrections append linked entries.
+- Obligation uses only Final LHSTP totals; overpayments are rejected; statuses distinguish Unpaid / Partially Paid / Paid. Final LHSTP revision/archiving that would create an overpayment is blocked.
+- Evidence accepts PDF/JPG/JPEG/PNG up to 10 MB per file. Multiple attachments are restorable from the Recycle Bin; permanent purge removes metadata and files.
+- Contract unlinking is blocked when LHSTP or Payment Records exist; successful unlinks appear in Activity History. PR permanent deletion is blocked until all linked Contracts are unlinked; no cascade delete occurs.
+
+### 14.8 Build sequence
+
+Use `DEVELOPMENT_PHASES.md` Phases 9–14 as the authoritative sequence. The earlier Section 12 sequence describes the original eight phases only.

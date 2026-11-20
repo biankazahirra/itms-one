@@ -2,10 +2,11 @@
 ## ITMS Administrative Management Web Application
 
 **Status:** Proposed physical schema specification  
-**Version:** 0.1  
+**Version:** 0.2  
+**Addendum:** 19 November 2026 — PR Tracking, Document Archive & Payment Tracking (Section 13)
 **Database:** `itms_admin_db`  
 **Engine:** MySQL 8.4 LTS / InnoDB / utf8mb4  
-**Related:** PRD v0.2, Technical Design v0.2, ERD v0.1
+**Related:** PRD v0.5, Technical Design v0.4, ERD v0.2
 
 This document translates the logical ERD into implementation-ready table specifications. It is a design artifact; migrations should be generated only after this schema and the companion ERD are reviewed for consistency.
 
@@ -119,6 +120,8 @@ Generate business numbers inside a transaction with a row lock (`SELECT ... FOR 
 | created_at / updated_at | DATETIME | No | |
 | deleted_at | DATETIME | Yes | Soft delete only when lifecycle permits |
 
+Tracking Status is derived from `pr_stage_updates`; no `tracking_status` column exists on `purchase_requests` (Decision 10).
+
 ### 4.2 `purchase_request_versions`
 
 | Column | Type | Null | Rule |
@@ -221,6 +224,7 @@ The item table belongs to a specific version. A revised RAB receives a new compl
 | po_number | VARCHAR(100) | No | Unique; duplicate blocks save |
 | contract_date | DATE | No | |
 | vendor_id | BIGINT UNSIGNED FK vendors.id | No | |
+| purchase_request_id | BIGINT UNSIGNED FK purchase_requests.id | Yes | Nullable; one PR may have many contracts; PR purge restricted while links exist (Decision 9) |
 | work_name | VARCHAR(255) | No | |
 | representative_name | VARCHAR(200) | No | |
 | representative_position | VARCHAR(200) | No | |
@@ -478,3 +482,99 @@ Circular `current_version_id` foreign keys may need to be added in a later migra
 - Use database transactions and row locks for number generation, finalization, and termin reservation.
 - Do not hard-delete a parent while version history or documents still require it.
 - The exact retention behavior for an expired Recycle Bin item with dependent history must be implemented conservatively: block purge and log the reason until a safe aggregate deletion rule exists.
+
+---
+
+## 13. Addendum tables and columns (approved 19 November 2026)
+
+### 13.1 `pr_stage_updates`
+
+| Column | Type | Null | Rule |
+|---|---|---:|---|
+| id | BIGINT UNSIGNED PK | No | |
+| purchase_request_id | BIGINT UNSIGNED FK purchase_requests.id | No | Owning PR |
+| stage | VARCHAR(60) | No | One of the five approved stages |
+| note | TEXT | Yes | Optional |
+| occurred_at | DATETIME | No | Stage update timestamp |
+| created_by | BIGINT UNSIGNED FK users.id | No | Actor |
+| created_at | DATETIME | No | Append-only; no `updated_at` |
+
+Append-only history. Index `(purchase_request_id, occurred_at)`. Stages progress sequentially; Stage 1 must be manually confirmed to begin tracking. Corrections append new rows and never overwrite prior rows. Tracking Status is derived from this table (Decision 10): no rows → `Not Tracked`; Stage 1–4 → `In Progress`; Stage 5 (`Goods/Services Received`) → `Done`.
+
+### 13.2 `pr_documents`
+
+| Column | Type | Null | Rule |
+|---|---|---:|---|
+| id | BIGINT UNSIGNED PK | No | |
+| purchase_request_id | BIGINT UNSIGNED FK purchase_requests.id | No | Owning PR |
+| category | VARCHAR(60) | No | One of the five approved categories |
+| original_filename | VARCHAR(255) | No | Display name only |
+| storage_path | VARCHAR(500) | No | Private relative path |
+| mime_type | VARCHAR(100) | No | |
+| file_size | BIGINT UNSIGNED | No | |
+| checksum_sha256 | CHAR(64) | No | |
+| uploaded_by | BIGINT UNSIGNED FK users.id | No | |
+| uploaded_at | DATETIME | No | |
+| notes | TEXT | Yes | Optional |
+| deleted_at | DATETIME | Yes | Soft delete; register in `recycle_bin_items` as `pr_document` |
+
+Index `purchase_request_id` and `category`. Distinct from `generated_documents`; user uploads never overwrite finalized versions or generated files.
+
+### 13.3 `payment_records`
+
+| Column | Type | Null | Rule |
+|---|---|---:|---|
+| id | BIGINT UNSIGNED PK | No | |
+| contract_id | BIGINT UNSIGNED FK contracts.id | No | Owning Contract/PO |
+| contract_termin_id | BIGINT UNSIGNED FK contract_termins.id | Yes | Applies to Termin payments |
+| corrects_payment_record_id | BIGINT UNSIGNED FK payment_records.id | Yes | Links a correction entry to the original payment record |
+| status | VARCHAR(20) | No | `Draft` / `Confirmed`; default `Draft` |
+| payment_date | DATE | No | Actual payment date |
+| payment_amount | DECIMAL(18,2) | No | Greater than zero |
+| payment_reference | VARCHAR(150) | No | |
+| created_by | BIGINT UNSIGNED FK users.id | No | |
+| created_at / updated_at | DATETIME | No | |
+
+Index `contract_id`, `contract_termin_id` and `corrects_payment_record_id`. Draft records do not contribute to paid totals or payment status. Only Confirmed records count as payments. Confirmed records cannot be directly edited or deleted; corrections append new records linked to the original (Decision 11). Payment status is derived in a service, never stored on the PR.
+
+### 13.4 `payment_evidences`
+
+| Column | Type | Null | Rule |
+|---|---|---:|---|
+| id | BIGINT UNSIGNED PK | No | |
+| payment_record_id | BIGINT UNSIGNED FK payment_records.id | No | One payment record has many evidence rows |
+| original_filename | VARCHAR(255) | No | Display name only |
+| storage_path | VARCHAR(500) | No | Private relative path |
+| mime_type | VARCHAR(100) | No | Allowed formats: PDF, JPG, JPEG, PNG (Decision 12) |
+| file_size | BIGINT UNSIGNED | No | Maximum 10 MB per file (Decision 12) |
+| checksum_sha256 | CHAR(64) | No | |
+| uploaded_by | BIGINT UNSIGNED FK users.id | No | |
+| uploaded_at | DATETIME | No | |
+| deleted_at | DATETIME | Yes | Soft delete; register in `recycle_bin_items` as `payment_evidence` |
+
+Index `payment_record_id`. Restore reinstates the file; permanent purge removes metadata and physical file.
+
+### 13.5 Additional constraints
+
+- `contracts.purchase_request_id` nullable FK with restrictive delete: PR permanent deletion is blocked while linked Contracts exist. Unlink requires no LHSTP records and no Payment Records, and every successful unlink is recorded in Activity History. No cascade delete to Contracts, LHSTPs, payment records or history. PO Number uniqueness and single-vendor rule unchanged (Decisions 9 and 13).
+- Tracking Status is derived from `pr_stage_updates`: no rows → `Not Tracked`; Stage 1–4 → `In Progress`; Stage 5 → `Done`. No `tracking_status` column; the 99 existing PRs have no stage rows and therefore show `Not Tracked` without fabricated history (Decision 10).
+- Tracking status and document status are independent; archival never sets `Done`.
+- `pr_stage_updates` is append-only with sequential stages; Stage 1 is manually confirmed; corrections append rows.
+- `pr_documents` is soft-delete only; no updates to finalized PR versions.
+- `payment_records.status` is `Draft` or `Confirmed`; Draft records are excluded from paid totals and status. Confirmed records are immutable; corrections append linked records (Decision 11).
+- Payment obligation is the sum of Final LHSTP totals for a contract; Draft and Archived LHSTPs are excluded. Status derives from Confirmed records; overpayments exceeding the obligation are rejected. Final LHSTP revision or archiving is blocked if it would cause Confirmed payments to exceed the revised obligation (Decision 14).
+- One payment record has many `payment_evidences`; allowed formats PDF/JPG/JPEG/PNG and 10 MB maximum per file. Evidence soft-delete registers in the Recycle Bin; restore keeps the file available; purge removes metadata and physical file (Decision 12).
+
+### 13.6 Additional migration order
+
+Append after the existing migration list:
+
+1. Add nullable `purchase_request_id` to `contracts`.
+2. Create `pr_stage_updates`.
+3. Create `pr_documents`.
+4. Create `payment_records` with `status` and `corrects_payment_record_id`.
+5. Create `payment_evidences`.
+
+### 13.7 Open decisions affecting physical design
+
+Decisions 10–14 resolved the previous open items. One item remains, recorded in `DECISION_LOG.md`: additional payment edge cases not explicitly approved.

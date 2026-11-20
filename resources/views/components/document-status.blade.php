@@ -2,8 +2,8 @@
 
 @php
     $classes = match ($status) {
-        'Final', 'Aktif' => 'bg-success/10 text-success',
-        'Archived' => 'bg-app text-muted ring-1 ring-inset ring-line',
+        'Final', 'Aktif', 'Done' => 'bg-success/10 text-success',
+        'Archived', 'Not Tracked' => 'bg-app text-muted ring-1 ring-inset ring-line',
         default => 'bg-warning/10 text-warning',
     };
 @endphp

@@ -4,10 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Models\Contract;
 use App\Models\ContractAttachment;
+use App\Models\PurchaseRequest;
 use App\Models\Vendor;
 use App\Services\ContractService;
 use App\Services\ContractStatusService;
+use App\Services\PaymentStatusCalculator;
 use App\Services\PrivateFileService;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -20,6 +23,7 @@ class ContractController extends Controller
         private readonly ContractService $contracts,
         private readonly ContractStatusService $status,
         private readonly PrivateFileService $files,
+        private readonly PaymentStatusCalculator $paymentStatus,
     ) {}
 
     public function index(Request $request): View
@@ -67,6 +71,7 @@ class ContractController extends Controller
     {
         return view('contracts.create', [
             'vendors' => Vendor::query()->where('is_active', true)->orderBy('company_name')->get(),
+            'purchaseRequests' => $this->purchaseRequests(),
             'contract' => new Contract,
         ]);
     }
@@ -92,15 +97,26 @@ class ContractController extends Controller
 
         $contract->load([
             'vendor',
+            'purchaseRequest',
             'termins',
             'attachments.uploader',
             'creator',
             'updater',
+            'payments.creator',
+            'payments.termin',
+            'payments.evidences.uploader',
         ]);
 
         return view('contracts.show', [
             'contract' => $contract,
             'activityLogs' => $contract->activityLogs()->with('user')->limit(30)->get(),
+            'paymentSummary' => [
+                'status' => $this->paymentStatus->status($contract),
+                'obligation' => $this->paymentStatus->obligation($contract),
+                'paid' => $this->paymentStatus->confirmedTotal($contract),
+                'outstanding' => $this->paymentStatus->outstanding($contract),
+            ],
+            'terminProgress' => $this->paymentStatus->terminProgress($contract),
         ]);
     }
 
@@ -108,15 +124,22 @@ class ContractController extends Controller
     {
         $this->status->sync($contract);
 
-        $contract->load(['vendor', 'termins', 'attachments.uploader']);
+        $contract->load(['vendor', 'purchaseRequest', 'termins', 'attachments.uploader']);
 
         $vendorIds = Vendor::query()->where('is_active', true)->pluck('id')->push($contract->vendor_id);
+
+        $purchaseRequests = $this->purchaseRequests();
+
+        if ($contract->purchaseRequest !== null && ! $purchaseRequests->contains('id', $contract->purchaseRequest->id)) {
+            $purchaseRequests->push($contract->purchaseRequest);
+        }
 
         return view('contracts.edit', [
             'vendors' => Vendor::query()
                 ->whereIn('id', $vendorIds->filter()->unique())
                 ->orderBy('company_name')
                 ->get(),
+            'purchaseRequests' => $purchaseRequests,
             'contract' => $contract,
         ]);
     }
@@ -135,6 +158,13 @@ class ContractController extends Controller
         return redirect()
             ->route('contracts.show', $contract)
             ->with('status', "Kontrak {$contract->po_number} berhasil diperbarui.");
+    }
+
+    public function unlinkPurchaseRequest(Request $request, Contract $contract): RedirectResponse
+    {
+        $this->contracts->unlinkPurchaseRequest($contract, $request->user());
+
+        return back()->with('status', "Kaitan PR pada kontrak {$contract->po_number} dilepas.");
     }
 
     public function destroy(Request $request, Contract $contract): RedirectResponse
@@ -206,6 +236,17 @@ class ContractController extends Controller
     }
 
     /**
+     * @return Collection<int, PurchaseRequest>
+     */
+    private function purchaseRequests()
+    {
+        return PurchaseRequest::query()
+            ->with('currentVersion')
+            ->latest('created_at')
+            ->get();
+    }
+
+    /**
      * @return array<string, mixed>
      */
     private function validated(Request $request, ?Contract $contract = null): array
@@ -217,6 +258,10 @@ class ContractController extends Controller
             ],
             'contract_date' => ['required', 'date'],
             'vendor_id' => ['required', 'integer', 'exists:vendors,id'],
+            'purchase_request_id' => [
+                'nullable', 'integer',
+                Rule::exists('purchase_requests', 'id')->whereNull('deleted_at'),
+            ],
             'work_name' => ['required', 'string', 'max:255'],
             'representative_name' => ['required', 'string', 'max:200'],
             'representative_position' => ['required', 'string', 'max:200'],
@@ -241,6 +286,7 @@ class ContractController extends Controller
             'po_number' => 'Nomor PO',
             'contract_date' => 'Tanggal kontrak',
             'vendor_id' => 'Vendor',
+            'purchase_request_id' => 'PR terkait',
             'work_name' => 'Nama pekerjaan',
             'representative_name' => 'Nama perwakilan',
             'representative_position' => 'Jabatan perwakilan',

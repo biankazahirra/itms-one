@@ -6,7 +6,7 @@
 @php($linkedPr = $budget->purchaseRequest)
 
 @section('content')
-    <x-page-header :title="$budget->rab_number"
+    <x-page-header :back="route('rab.index')" :title="$budget->rab_number"
                    :description="$version?->work_name">
         <x-slot:action>
             <div class="flex flex-wrap items-center gap-2">

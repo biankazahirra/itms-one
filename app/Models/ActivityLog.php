@@ -39,6 +39,15 @@ class ActivityLog extends Model
         'attachment_added' => 'Lampiran ditambahkan',
         'attachment_removed' => 'Lampiran dihapus',
         'purge_blocked' => 'Penghapusan permanen diblokir',
+        'stage_updated' => 'Tahap tracking diperbarui',
+        'unlinked' => 'Kaitan PR dilepas',
+        'document_uploaded' => 'Dokumen ditambahkan',
+        'payment_recorded' => 'Pembayaran dicatat',
+        'payment_confirmed' => 'Pembayaran dikonfirmasi',
+        'payment_corrected' => 'Koreksi pembayaran dicatat',
+        'payment_deleted' => 'Draf pembayaran dihapus',
+        'evidence_uploaded' => 'Bukti pembayaran ditambahkan',
+        'evidence_deleted' => 'Bukti pembayaran dihapus',
     ];
 
     /**

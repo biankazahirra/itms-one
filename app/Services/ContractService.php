@@ -40,6 +40,7 @@ class ContractService
                 'po_number' => trim((string) $data['po_number']),
                 'contract_date' => $data['contract_date'],
                 'vendor_id' => (int) $data['vendor_id'],
+                'purchase_request_id' => $this->purchaseRequestId($data),
                 'work_name' => trim((string) $data['work_name']),
                 'representative_name' => trim((string) $data['representative_name']),
                 'representative_position' => trim((string) $data['representative_position']),
@@ -95,11 +96,17 @@ class ContractService
 
             $before = $this->snapshot($contract);
             $payment = $this->paymentFields($data);
+            $purchaseRequestId = $this->purchaseRequestId($data);
+
+            if ($contract->purchase_request_id !== null && $purchaseRequestId !== (int) $contract->purchase_request_id) {
+                $this->assertUnlinkAllowed($contract);
+            }
 
             $contract->forceFill([
                 'po_number' => trim((string) $data['po_number']),
                 'contract_date' => $data['contract_date'],
                 'vendor_id' => (int) $data['vendor_id'],
+                'purchase_request_id' => $purchaseRequestId,
                 'work_name' => trim((string) $data['work_name']),
                 'representative_name' => trim((string) $data['representative_name']),
                 'representative_position' => trim((string) $data['representative_position']),
@@ -144,6 +151,43 @@ class ContractService
                 "Memperbarui kontrak {$contract->po_number}: {$changes['labels']}.",
                 $changes['before'],
                 $changes['after'],
+                $actor,
+            );
+        });
+    }
+
+    public function unlinkPurchaseRequest(Contract $contract, User $actor): void
+    {
+        DB::transaction(function () use ($contract, $actor): void {
+            $contract = Contract::query()->lockForUpdate()->findOrFail($contract->id);
+            $purchaseRequestId = $contract->purchase_request_id;
+
+            if ($purchaseRequestId === null) {
+                return;
+            }
+
+            $this->assertUnlinkAllowed($contract);
+
+            $contract->forceFill([
+                'purchase_request_id' => null,
+                'updated_by' => $actor->id,
+            ])->save();
+
+            $this->logChange(
+                $contract,
+                $actor,
+                'unlinked',
+                ['purchase_request_id' => (int) $purchaseRequestId],
+                ['purchase_request_id' => null],
+            );
+
+            $this->activity->record(
+                'contract',
+                $contract->id,
+                'unlinked',
+                "Melepas kaitan PR dari kontrak {$contract->po_number}.",
+                ['purchase_request_id' => (int) $purchaseRequestId],
+                ['purchase_request_id' => null],
                 $actor,
             );
         });
@@ -299,6 +343,35 @@ class ContractService
 
     /**
      * @param  array<string, mixed>  $data
+     */
+    private function purchaseRequestId(array $data): ?int
+    {
+        $value = $data['purchase_request_id'] ?? null;
+
+        return $value === null || $value === '' ? null : (int) $value;
+    }
+
+    /**
+     * A Contract may only be unlinked from its PR when no LHSTP or payment
+     * record depends on it.
+     */
+    private function assertUnlinkAllowed(Contract $contract): void
+    {
+        if ($contract->lhstps()->exists()) {
+            throw ValidationException::withMessages([
+                'purchase_request_id' => 'Kontrak memiliki LHSTP sehingga kaitan PR tidak dapat dilepas.',
+            ]);
+        }
+
+        if ($contract->payments()->exists()) {
+            throw ValidationException::withMessages([
+                'purchase_request_id' => 'Kontrak memiliki catatan pembayaran sehingga kaitan PR tidak dapat dilepas.',
+            ]);
+        }
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
      * @return array{monthly: ?string, full: ?string, termins: array<int, array<string, mixed>>}
      */
     private function paymentFields(array $data): array
@@ -377,6 +450,7 @@ class ContractService
             'po_number' => $contract->po_number,
             'contract_date' => $contract->contract_date?->format('Y-m-d'),
             'vendor_id' => (int) $contract->vendor_id,
+            'purchase_request_id' => $contract->purchase_request_id !== null ? (int) $contract->purchase_request_id : null,
             'work_name' => $contract->work_name,
             'representative_name' => $contract->representative_name,
             'representative_position' => $contract->representative_position,

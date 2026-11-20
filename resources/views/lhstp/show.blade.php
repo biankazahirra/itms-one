@@ -3,7 +3,7 @@
 @section('title', 'Detail LHSTP')
 
 @section('content')
-    <x-page-header :title="$lhstp->lhstp_number"
+    <x-page-header :back="route('lhstp.index')" :title="$lhstp->lhstp_number"
                    :description="$version?->work_name_snapshot">
         <x-slot:action>
             <div class="flex flex-wrap items-center gap-2">

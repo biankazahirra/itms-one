@@ -2,8 +2,9 @@
 ## ITMS Administrative Management Web Application
 
 **Status:** Proposed logical data model for review  
-**Version:** 0.1  
-**Related documents:** ITMS Administrative App PRD Draft v0.2; Technical Design Document v0.1
+**Version:** 0.2  
+**Addendum:** 19 November 2026 — PR Tracking, Document Archive & Payment Tracking (Section 8)
+**Related documents:** ITMS Administrative App PRD Draft v0.5; Technical Design Document v0.4
 
 This ERD translates the approved business requirements into a proposed relational structure. It is a logical design, not yet an executable migration set. Physical column definitions, indexes, delete behavior, and constraints will be finalized before database migrations are written.
 
@@ -88,6 +89,58 @@ erDiagram
         int sort_order
     }
 
+    PR_STAGE_UPDATES {
+        bigint id PK
+        bigint purchase_request_id FK
+        string stage
+        text note
+        datetime occurred_at
+        bigint created_by FK
+        datetime created_at
+    }
+
+    PR_DOCUMENTS {
+        bigint id PK
+        bigint purchase_request_id FK
+        string category
+        string original_filename
+        string storage_path
+        string mime_type
+        bigint file_size
+        string checksum_sha256
+        bigint uploaded_by FK
+        datetime uploaded_at
+        text notes
+        datetime deleted_at
+    }
+
+    PAYMENT_RECORDS {
+        bigint id PK
+        bigint contract_id FK
+        bigint contract_termin_id FK
+        bigint corrects_payment_record_id FK
+        string status
+        date payment_date
+        decimal payment_amount
+        string payment_reference
+        bigint created_by FK
+        datetime created_at
+        datetime updated_at
+    }
+
+    PAYMENT_EVIDENCES {
+        bigint id PK
+        bigint payment_record_id FK
+        string original_filename
+        string storage_path
+        string mime_type
+        bigint file_size
+        string checksum_sha256
+        bigint uploaded_by FK
+        datetime uploaded_at
+        datetime deleted_at
+    }
+
     BUDGETS {
         bigint id PK
         string rab_number UK
@@ -129,6 +182,7 @@ erDiagram
         string po_number UK
         date contract_date
         bigint vendor_id FK
+        bigint purchase_request_id FK
         string work_name
         string representative_name
         string representative_position
@@ -278,6 +332,12 @@ erDiagram
     PURCHASE_REQUESTS ||--|{ PURCHASE_REQUEST_VERSIONS : has
     PURCHASE_REQUEST_VERSIONS ||--|{ PURCHASE_REQUEST_ITEMS : contains
     PURCHASE_REQUESTS ||--o{ BUDGETS : may_be_linked_to
+    PURCHASE_REQUESTS ||--o{ PR_STAGE_UPDATES : records
+    PURCHASE_REQUESTS ||--o{ PR_DOCUMENTS : archives
+    PURCHASE_REQUESTS ||--o{ CONTRACTS : may_be_linked_to
+    CONTRACTS ||--o{ PAYMENT_RECORDS : receives
+    CONTRACT_TERMIN o|--o{ PAYMENT_RECORDS : applies_to
+    PAYMENT_RECORDS ||--|{ PAYMENT_EVIDENCES : has
     PURCHASE_REQUEST_VERSIONS o|--o{ BUDGET_VERSIONS : source_for
 
     BUDGETS ||--|{ BUDGET_VERSIONS : has
@@ -401,3 +461,45 @@ The following are implementation details, not blockers for the logical ERD:
 ## 7. Next step
 
 Review the logical model and then produce Laravel migrations in dependency order. Before migrations are run, validate the few cross-module retention and deletion edge cases against the PRD.
+
+---
+
+## 8. Addendum entities and relationships (approved 19 November 2026)
+
+### 8.1 PR stage updates (`pr_stage_updates`)
+
+Append-only history for the five manual tracking stages. Each row stores the PR, stage, occurrence timestamp, actor, and optional note. The current stage is derived from history; no prior row is updated or deleted. Tracking Status is derived from this history and is not stored on `purchase_requests`: no stage rows → `Not Tracked`; Stage 1–4 → `In Progress`; Stage 5 (`Goods/Services Received`) → `Done` (Decision 10).
+
+### 8.2 PR documents (`pr_documents`)
+
+User-uploaded documents attached to one PR. Distinct from system-generated documents in `generated_documents`. Stores a fixed category, original filename, private storage path, MIME type, size, checksum, uploader, upload timestamp, and optional notes. Soft-deletable and registered in the shared Recycle Bin when deleted.
+
+### 8.3 Payment records (`payment_records`)
+
+Records actual payments against a Contract/PO. Optional `contract_termin_id` links a payment to a payment term for Termin contracts. Stores payment date, amount and reference. A contract may have many payment records. Each record has a `Draft` or `Confirmed` state; Draft records do not contribute to paid totals or payment status. Only Confirmed payments count as actual payments. Confirmed records cannot be directly edited or deleted; corrections are new records whose nullable `corrects_payment_record_id` links to the original record, preserving originals and history (Decision 11). Payment status (Unpaid / Partially Paid / Paid) is derived from Confirmed records against the accumulated total of Final LHSTP amounts for the contract; Draft and Archived LHSTPs are excluded and overpayments are rejected.
+
+### 8.3.1 Payment evidences (`payment_evidences`)
+
+Each payment record may have multiple evidence attachments. Each stores original filename, private storage path, MIME type, size, checksum, uploader and upload timestamp. Allowed formats are PDF, JPG, JPEG and PNG, with a maximum of 10 MB per file (Decision 12). Storage is private. Soft-deletable and registered in the shared Recycle Bin; restore keeps the file available, permanent purge removes metadata and physical file.
+
+### 8.4 Relationship changes
+
+- `contracts.purchase_request_id` is nullable: one PR → many Contracts/POs, one Contract/PO → at most one PR, unlinked Contracts remain valid.
+- `pr_stage_updates` and `pr_documents` belong to one PR.
+- `payment_records` belongs to one contract and optionally one contract termin; each has many `payment_evidences`. A correction record links back to an original payment record.
+- Existing `contracts.po_number` uniqueness and single-vendor rule are unchanged.
+- A Contract is unlinkable only if it has no LHSTP records and no Payment Records; every successful unlink is recorded in Activity History. A PR may be permanently deleted only after all linked Contracts are unlinked. No cascade delete reaches Contracts, LHSTPs, payment records or history (Decision 13).
+- Revisions or archiving of a Final LHSTP are blocked when Confirmed payments would exceed the revised obligation; resolve through a recorded payment correction (Decision 14).
+
+### 8.5 Constraints and indexes
+
+- `pr_documents.category` constrained to the five approved categories.
+- `pr_stage_updates.stage` constrained to the five approved stages; progression is sequential, Stage 1 must be manually confirmed, and Stage 5 yields `Done` (Decision 6). Tracking Status is derived; `purchase_requests` has no `tracking_status` column (Decision 10).
+- Index `pr_stage_updates.purchase_request_id`, `pr_documents.purchase_request_id`, `payment_records.contract_id`, `payment_records.contract_termin_id`, `payment_records.corrects_payment_record_id`, and `contracts.purchase_request_id`.
+- `payment_records.status` constrained to `Draft` / `Confirmed`; only Confirmed records count as payments (Decision 11).
+- `payment_evidences` MIME type limited to PDF, JPG, JPEG, PNG; file size ≤ 10 MB per file (Decision 12).
+- `contracts.purchase_request_id` uses restrictive delete: PR purge is blocked while links exist; unlink requires no LHSTP and no Payment Records (Decisions 9 and 13). No cascade delete on any dependent entity.
+
+### 8.6 Immutability
+
+Adding stage updates or documents must not modify finalized PR versions or generated documents. Confirmed payment records are immutable: corrections append new records only. LHSTP revisions and archival preserve original records and revision history while blocking changes that would create an overpayment condition. Payment records do not write to PR tracking status.

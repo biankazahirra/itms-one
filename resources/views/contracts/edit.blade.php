@@ -3,7 +3,7 @@
 @section('title', 'Ubah Kontrak')
 
 @section('content')
-    <x-page-header :title="'Ubah '.$contract->po_number"
+    <x-page-header :back="route('contracts.index')" :title="'Ubah '.$contract->po_number"
                    description="{{ $contract->work_name }}" />
 
     <x-session-alerts />

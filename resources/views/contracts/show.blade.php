@@ -10,7 +10,7 @@
 @endphp
 
 @section('content')
-    <x-page-header :title="$contract->po_number" :description="$contract->work_name">
+    <x-page-header :back="route('contracts.index')" :title="$contract->po_number" :description="$contract->work_name">
         <x-slot:action>
             <div class="flex flex-wrap items-center gap-2">
                 <a href="{{ route('contracts.edit', $contract) }}" class="btn btn-primary">Ubah Kontrak</a>
@@ -80,6 +80,22 @@
                 <div class="sm:col-span-2">
                     <dt class="text-xs text-muted">Nama pekerjaan</dt>
                     <dd class="mt-0.5 text-sm">{{ $contract->work_name }}</dd>
+                </div>
+                <div class="sm:col-span-2">
+                    <dt class="text-xs text-muted">PR terkait</dt>
+                    <dd class="mt-0.5 flex flex-wrap items-center gap-3 text-sm">
+                        @if ($contract->purchaseRequest)
+                            <a href="{{ route('purchase-requests.show', $contract->purchaseRequest) }}"
+                               class="font-medium text-primary hover:underline">{{ $contract->purchaseRequest->pr_number }}</a>
+                            <form method="POST" action="{{ route('contracts.unlink', $contract) }}"
+                                  onsubmit="return confirm('Lepas kaitan PR ini?')">
+                                @csrf
+                                <button type="submit" class="text-sm font-medium text-danger hover:underline">Lepas</button>
+                            </form>
+                        @else
+                            <span class="text-muted">Tidak terkait PR</span>
+                        @endif
+                    </dd>
                 </div>
                 <div class="sm:col-span-2">
                     <dt class="text-xs text-muted">Vendor</dt>
@@ -244,6 +260,8 @@
             <button type="submit" class="btn btn-secondary">Unggah</button>
         </form>
     </section>
+
+    @include('contracts._payments')
 
     <section class="mt-6 rounded-xl border border-line bg-surface p-6">
         <h3 class="mb-4 text-sm font-semibold uppercase tracking-wide text-muted">Riwayat Perubahan Kontrak</h3>

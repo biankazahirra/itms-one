@@ -2,9 +2,10 @@
 ## ITMS Administrative Management Web Application
 
 **Document status:** Initial technical baseline  
-**Version:** 0.3  
+**Version:** 0.4  
 **Date:** 16 November 2026  
-**Related document:** ITMS Administrative App PRD Draft v0.2  
+**Related document:** ITMS Administrative App PRD Draft v0.5  
+**Approved addendum:** 19 November 2026 — PR Tracking, Document Archive & Payment Tracking (Section 17)
 **Architecture style:** Centralized local web application, LAN-ready
 
 ---
@@ -558,3 +559,84 @@ See `ITMS_Administrative_App_ERD.md` for the detailed Mermaid ERD, table groups,
 - `ITMS_Administrative_App_Implementation_Blueprint.md` — navigation, screen behavior, lifecycle transitions, validations, calculations, document pipeline, scheduled tasks, and acceptance criteria.
 
 - `ITMS_Administrative_App_UI_UX_Specification.md` — visual and interaction design baseline.
+
+---
+
+## 17. Addendum Technical Design — Tracking, Archive, Payments
+
+**Status:** Approved requirements, 19 November 2026. Technical details below follow the existing modular-monolith baseline and introduce no new dependencies or stack changes.
+
+### 17.1 Module boundaries
+
+Add three capabilities to the existing application layers:
+
+- **PR Tracking** — stage history, tracking status, completion rule.
+- **PR Document Archive** — user-uploaded PR documents with private storage and record-level access.
+- **Payment Tracking** — payment records against contracts/terms and derived payment status.
+
+They integrate into existing PR and Contract modules. No new top-level business module or microservice is introduced.
+
+### 17.2 Additional tables
+
+| Table | Purpose / key fields |
+|---|---|
+| `pr_stage_updates` | Append-only stage history: PR, stage, timestamp, actor, optional note |
+| `pr_documents` | User-uploaded PR documents: category, filename, private path, MIME, size, checksum, uploader, upload time, optional notes, `deleted_at` |
+| `payment_records` | Actual payments: contract, optional contract termin, date, amount, reference, `Draft`/`Confirmed` state, correction link to original record |
+| `payment_evidences` | Multiple evidence attachments per payment record: filename, private path, MIME, size, checksum, `deleted_at` |
+
+`contracts` gains a nullable `purchase_request_id` foreign key. Tracking Status is derived from `pr_stage_updates`; `purchase_requests` has no `tracking_status` column (Decision 10).
+
+Full physical definitions are in `ITMS_Administrative_App_Database_Schema.md`.
+
+### 17.3 Relationships
+
+- One PR has many `pr_stage_updates` and many `pr_documents`. Tracking Status is derived from that history: no records → `Not Tracked`; Stage 1–4 → `In Progress`; Stage 5 → `Done`.
+- One PR has zero or more Contracts/POs; one Contract has at most one PR and may be unlinked.
+- One Contract has many `payment_records`; a Termin payment record may reference one `contract_termins` row.
+- One payment record has many `payment_evidences`; corrections are new records linked to the original confirmed record.
+- Payment obligation is the accumulated Final LHSTP total for the contract; Draft and Archived LHSTPs are excluded. Only Confirmed payments count; Draft payments are ignored and overpayments are rejected.
+- Revisions or archiving of a Final LHSTP are blocked when Confirmed payments would exceed the revised obligation; resolve through a recorded payment correction.
+- Payment records never write to PR tracking status.
+- PR-level payment summaries aggregate Confirmed payments on linked contracts; they are read-only derivations.
+- A Contract is unlinkable only when it has no LHSTP records and no Payment Records; successful unlinks are recorded in Activity History. PR permanent deletion proceeds only after all linked Contracts are unlinked. No cascade delete reaches Contracts, LHSTPs, payment records or history.
+
+### 17.4 Services
+
+Add focused services alongside the existing ones:
+
+- `PrTrackingService` — records stage updates transactionally, writes activity log, derives status from history.
+- `PrDocumentArchiveService` — upload, metadata, download/preview authorization, recycle-bin integration.
+- `PaymentRecordService` — Draft/Confirmed payment records, append-only corrections, evidence handling.
+- `PaymentStatusCalculator` — derives Unpaid/Partially Paid/Paid from Confirmed payments only.
+
+Business rules stay out of Blade and controllers. Report-level access is implemented as a shared private-file route keyed by record ID, not by arbitrary storage path.
+
+### 17.5 File storage and authorization
+
+- Add private folders `pr-documents/{pr_id}/` and `payments/{payment_id}/evidence/`. A payment record may hold multiple evidence files.
+- PR document preview allowlist: PDF, JPG, PNG. Other supported formats are download-only.
+- Payment evidence allowed formats: PDF, JPG, JPEG, PNG. Maximum 10 MB per file; formats and limit are fixed by Decision 12.
+- Upload validation: extension, MIME type, size, checksum. Generated unique physical filenames; original filename is display metadata only.
+- The existing `files.show` path-based route is not used by any view; replace it with record-ID routes that resolve the storage path server-side and enforce record-level authorization.
+- Soft-deleted documents keep their physical file. Permanent purge removes both metadata and file.
+
+### 17.6 Transactions and integrity
+
+- Stage update and Done transition run in one transaction with the activity log.
+- Document upload writes file and metadata atomically; failed writes leave no orphan metadata.
+- Payment recording runs in one transaction with all evidence storage. Corrections append a new record and never mutate a Confirmed record.
+- LHSTP revision/archiving checks the revised obligation against Confirmed payments in the same transaction and blocks conflicting changes.
+- Contract unlinking checks for LHSTPs and Payment Records, writes an Activity History entry, and never cascades.
+- Evidence deletion registers a recycle-bin entry; restore reinstates the file; permanent purge removes metadata and file.
+- Uploaded documents never modify finalized PR versions or generated documents.
+
+### 17.7 Open technical decisions
+
+Decisions 6–9 resolved the transition rules, payment-status base, multiple-evidence structure and PR-purge restriction. Decisions 10–14 resolved tracking storage, payment confirmation/correction, evidence formats and limits, contract unlinking and obligation-change conflicts. One item remains, recorded in `DECISION_LOG.md`:
+
+1. Additional payment edge cases not explicitly approved.
+
+### 17.8 Phase reference
+
+The approved delivery order for this addendum is in `DEVELOPMENT_PHASES.md` (Phases 9–14). That file is the authoritative phase baseline; the earlier list in Section 12 describes the original eight phases only.

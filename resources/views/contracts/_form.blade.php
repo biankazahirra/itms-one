@@ -54,6 +54,23 @@
             </x-field>
 
             <div class="sm:col-span-2">
+                <x-field name="purchase_request_id" label="PR Terkait"
+                         help="Opsional. Satu kontrak/PO hanya dapat terkait satu PR.">
+                    <select id="purchase_request_id" name="purchase_request_id"
+                            @error('purchase_request_id') aria-invalid="true" aria-describedby="purchase_request_id-error" @enderror
+                            class="input input-select @error('purchase_request_id') input-error @enderror">
+                        <option value="">Tanpa PR</option>
+                        @foreach ($purchaseRequests as $relatedPr)
+                            <option value="{{ $relatedPr->id }}"
+                                @selected((string) old('purchase_request_id', $contract->purchase_request_id) === (string) $relatedPr->id)>
+                                {{ $relatedPr->pr_number }} — {{ $relatedPr->currentVersion?->subject ?? 'Tanpa perihal' }}
+                            </option>
+                        @endforeach
+                    </select>
+                </x-field>
+            </div>
+
+            <div class="sm:col-span-2">
                 <x-field name="work_name" label="Nama Pekerjaan" required>
                     <input id="work_name" name="work_name" type="text" required maxlength="255"
                            value="{{ old('work_name', $contract->work_name) }}"

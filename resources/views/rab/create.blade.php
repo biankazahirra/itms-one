@@ -3,7 +3,7 @@
 @section('title', 'Buat RAB')
 
 @section('content')
-    <x-page-header title="Buat RAB"
+    <x-page-header :back="route('rab.index')" title="Buat RAB"
                    description="Buat RAB mandiri, atau impor item dari satu PR tersimpan." />
 
     <x-session-alerts />
